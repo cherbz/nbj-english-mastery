@@ -62,7 +62,7 @@
             </div>
             <button x-show="!subscribed" @click="currentDay = billing.freeDays + 1; resetAll(); window.scrollTo({ top: 0, behavior: 'smooth' })"
                 class="bg-amber-400 text-slate-900 text-xs font-bold px-4 py-2 rounded-xl shadow-md hover:bg-amber-300">Go Premium</button>
-            <span x-show="subscribed" class="bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold px-3 py-2 rounded-xl">Premium &#10003;</span>
+            <span x-show="subscribed" class="bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold px-3 py-2 rounded-xl" x-text="'Premium \u2713 \u2022 ' + daysLeft + ' days left'"></span>
             <div class="flex items-center gap-2 bg-orange-50 border border-orange-200 text-orange-700 rounded-xl px-3 py-2 text-xs font-bold">
                 <span>&#128293;</span><span x-text="liveStreak + '-day streak'"></span>
             </div>
@@ -174,8 +174,17 @@
                         <li class="flex gap-2"><span class="text-emerald-400">&#10003;</span><span>Weak-Spot Coach that finds the patterns you keep missing</span></li>
                         <li class="flex gap-2"><span class="text-emerald-400">&#10003;</span><span>Unlimited 5-minute Fix-It drills with fresh sentences</span></li>
                     </ul>
-                    <button @click="subscribe()" class="w-full bg-brand-600 hover:bg-brand-500 text-white font-bold py-3 rounded-xl shadow-md transition-all" x-text="'Subscribe for ' + plan.price + plan.per"></button>
-                    <p class="text-[11px] text-slate-400 text-center mt-3">Secure checkout by Stripe</p>
+                    <div class="space-y-3">
+                        <button @click="openPayment()" class="w-full bg-gradient-to-r from-brand-600 to-pink-500 hover:opacity-90 text-white font-bold py-3 rounded-xl shadow-md transition-all" x-text="'1. Pay ' + plan.price + ' with GCash, Maya or card'"></button>
+                        <p class="text-xs text-slate-300">2. After paying, send your receipt to <span class="font-semibold text-white" x-text="cherbbinondzo@gmail.com"></span> and you will receive your access code.</p>
+                        <div class="flex gap-2">
+                            <input x-model="code" @keydown.enter="redeemCode()" placeholder="NBJ-XXXX-XXXX-XXXX" autocomplete="off"
+                                class="flex-1 min-w-0 rounded-lg bg-slate-800 border border-slate-600 px-3 py-2 text-sm text-white placeholder-slate-500 uppercase focus:outline-none focus:border-brand-500">
+                            <button @click="redeemCode()" class="bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-bold text-sm px-4 rounded-lg">3. Unlock</button>
+                        </div>
+                        <p class="text-xs min-h-[1rem]" :class="subscribed ? 'text-emerald-400' : 'text-amber-300'" x-text="codeMsg"></p>
+                        <p class="text-[11px] text-slate-400 text-center">Payments are processed securely by PayMongo.</p>
+                    </div>
                 </div>
             </div>
 
@@ -903,18 +912,34 @@
 
     <!-- App Data & Logic -->
     <script>
-        /* ===== BILLING CONFIG =====
-           1. In Stripe Dashboard > Payment Links, create one link per plan.
-           2. Paste each URL into `link` below.
-           3. For each link set "After payment" > redirect to: https://YOUR-SITE/index.html?subscribed=1
-           4. Set demoUnlock to false before going live. */
+        /* ===== BILLING CONFIG (PayMongo + access codes) =====
+           1. In the PayMongo dashboard create a Payment Link for each pass and paste its URL into `link`.
+           2. Set `contact` to the email or Facebook page where customers send their payment receipt.
+           3. Customers receive an access code from you. Generate codes with make-codes.py and paste the
+              printed hash lines into `codeHashes` (the plain codes never appear in this file).
+           4. Prices below are placeholders: set them to match your PayMongo links. */
         const BILLING = {
             freeDays: 7,
-            demoUnlock: true,
+            contact: 'YOUR-EMAIL-OR-FACEBOOK-PAGE',
             plans: [
-                { id: 'monthly', name: 'Monthly', price: '$9', per: '/month', note: '', link: '' },
-                { id: 'yearly', name: 'Yearly', price: '$59', per: '/year', note: 'Best value: save 45%', link: '' }
-            ]
+                { id: 'pass30', name: '30-Day Pass', price: '\u20B1299', per: ' / 30 days', note: '', link: '' },
+                { id: 'pass365', name: '1-Year Pass', price: '\u20B11,999', per: ' / year', note: 'Best value', link: '' }
+            ],
+            codeHashes: {
+                '0502874b0eef37248e720987e2340c000f45bd9d6b6f613a0cdab79db20edd39': 30,
+                'd4a787b9c6be49e9d4086ba7522ff504e32fea51353c44bb0a34d5f82c604e25': 30,
+                '9c6d043f28d2b82072f814fd92f934906be63661d29623ff1770889bcc071d3e': 30,
+                '5a2b5f0a0b02e279d62a8d826ad7b236ff8aacd462d8c2b9938d04124d5ea3b9': 30,
+                '00cff27c257bcbbbf32738ad46ecdd90c4d1f64de578f9e282c53b459885eecb': 30,
+                'fdb7b8941bef371ecf253b3dcb69694b5215725791beda26a079a98b8e1c0dfe': 30,
+                '13760f6a1e4a5465aebc880e7a3edd1f43b1cbe30f9cc7a50b6ff602d217c72f': 30,
+                'ca00839aeb67af0577bc18e16f55d46e56b7989accf3ea00e3f0fa89e621dbc0': 30,
+                '1944768a4c2b095190e2c26878453e6a79c9e1ea8847bd4e9663f5838c518b9d': 30,
+                '2b1b101170b19a2ca316b3486f4a483b56641b8f772213d3b64ece4c20340740': 30,
+                '515cd35ffae7be877d652ee10eb0009d488948e2868a488d93aae484a07b678a': 365,
+                '611641b151d1906b8f7300f019e510826379a35219e5bb1e8c89d0c004aeda02': 365,
+                '8374e5a79e4b2df86be593ba60b5a107834919cbb9f542a900b75a5083ae10fd': 365,
+            }
         };
 
         function appData() {
@@ -929,8 +954,10 @@
                 skillStats: JSON.parse(localStorage.getItem('english_skill_stats_v1') || '{}'),
                 missed: [],
                 billing: BILLING,
-                selectedPlan: 'yearly',
-                subscribed: localStorage.getItem('english_sub_v1') === '1',
+                selectedPlan: 'pass365',
+                subUntil: Number(localStorage.getItem('english_sub_until_v1') || 0),
+                code: '',
+                codeMsg: '',
                 drillActive: false, drillQs: [], drillIdx: 0, drillPick: null, drillScore: 0, drillDone: false,
                 completedDays: JSON.parse(localStorage.getItem('english_completed_days_absolute_v14') || '[]'),
                 
@@ -1146,12 +1173,12 @@
                     return own.concat(QENGINE.examples(this.currentDay, Math.max(0, 10 - own.length))).slice(0, 10);
                 },
 
-                init() {
-                    if (new URLSearchParams(window.location.search).get('subscribed') === '1') {
-                        this.subscribed = true;
-                        localStorage.setItem('english_sub_v1', '1');
-                        window.history.replaceState(null, '', window.location.pathname);
-                    }
+                get subscribed() {
+                    return this.subUntil > Date.now();
+                },
+
+                get daysLeft() {
+                    return Math.max(0, Math.ceil((this.subUntil - Date.now()) / 864e5));
                 },
 
                 isLocked(day) {
@@ -1162,12 +1189,29 @@
                     return this.billing.plans.find(x => x.id === this.selectedPlan) || this.billing.plans[0];
                 },
 
-                subscribe() {
-                    const p = this.plan;
-                    if (p.link) { window.location.href = p.link; return; }
-                    if (this.billing.demoUnlock && window.confirm('Stripe is not connected yet. Unlock Premium in demo mode?')) {
-                        this.subscribed = true;
-                        localStorage.setItem('english_sub_v1', '1');
+                openPayment() {
+                    if (this.plan.link) window.open(this.plan.link, '_blank', 'noopener');
+                    else this.codeMsg = 'The payment link is not set up yet. Please check back soon.';
+                },
+
+                async redeemCode() {
+                    const c = this.code.trim().toUpperCase().replace(/\s+/g, '');
+                    if (!c) { this.codeMsg = 'Please enter your access code.'; return; }
+                    try {
+                        const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(c));
+                        const h = Array.from(new Uint8Array(buf)).map(x => x.toString(16).padStart(2, '0')).join('');
+                        const days = this.billing.codeHashes[h];
+                        const used = JSON.parse(localStorage.getItem('english_used_codes_v1') || '[]');
+                        if (!days) { this.codeMsg = 'That code is not valid. Check it and try again.'; return; }
+                        if (used.includes(h)) { this.codeMsg = 'This code was already used on this device.'; return; }
+                        used.push(h);
+                        localStorage.setItem('english_used_codes_v1', JSON.stringify(used));
+                        this.subUntil = Math.max(this.subUntil, Date.now()) + days * 864e5;
+                        localStorage.setItem('english_sub_until_v1', String(this.subUntil));
+                        this.codeMsg = 'Premium unlocked for ' + days + ' days. Enjoy!';
+                        this.code = '';
+                    } catch (e) {
+                        this.codeMsg = 'This browser could not check the code. Try Chrome, Edge, or Safari.';
                     }
                 },
 
