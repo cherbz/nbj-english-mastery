@@ -175,15 +175,21 @@
                         <li class="flex gap-2"><span class="text-emerald-400">&#10003;</span><span>Unlimited 5-minute Fix-It drills with fresh sentences</span></li>
                     </ul>
                     <div class="space-y-3">
-                        <button @click="openPayment()" class="w-full bg-gradient-to-r from-brand-600 to-pink-500 hover:opacity-90 text-white font-bold py-3 rounded-xl shadow-md transition-all" x-text="'1. Pay ' + plan.price + ' with GCash, Maya or card'"></button>
-                        <p class="text-xs text-slate-300">2. After paying, send your receipt to <span class="font-semibold text-white" x-text="cherbbinondzo@gmail.com"></span> and you will receive your access code.</p>
+                        <button @click="requestPayment()" class="w-full bg-gradient-to-r from-brand-600 to-pink-500 hover:opacity-90 text-white font-bold py-3 rounded-xl shadow-md transition-all" x-text="'1. Email us to get the ' + plan.name + ' (' + plan.price + ')'"></button>
+                        <button @click="openGmail()" class="w-full text-xs text-slate-300 hover:text-white underline">No mail app? Open a Gmail draft in your browser</button>
+                        <p class="text-xs text-slate-300 flex flex-wrap items-center gap-2">
+                            <span>No email app? Write to</span>
+                            <span class="font-semibold text-white break-all" x-text="billing.contact"></span>
+                            <button @click="copyContact()" class="text-[11px] bg-slate-700 hover:bg-slate-600 rounded px-2 py-0.5" x-text="copied ? 'Copied!' : 'Copy'"></button>
+                        </p>
+                        <p class="text-xs text-slate-300">2. We will reply with our GCash details. Send your payment, then send us the receipt.</p>
+                        <p class="text-xs text-slate-300">3. We will email you an access code. Type it here:</p>
                         <div class="flex gap-2">
                             <input x-model="code" @keydown.enter="redeemCode()" placeholder="NBJ-XXXX-XXXX-XXXX" autocomplete="off"
                                 class="flex-1 min-w-0 rounded-lg bg-slate-800 border border-slate-600 px-3 py-2 text-sm text-white placeholder-slate-500 uppercase focus:outline-none focus:border-brand-500">
-                            <button @click="redeemCode()" class="bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-bold text-sm px-4 rounded-lg">3. Unlock</button>
+                            <button @click="redeemCode()" class="bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-bold text-sm px-4 rounded-lg">Unlock</button>
                         </div>
                         <p class="text-xs min-h-[1rem]" :class="subscribed ? 'text-emerald-400' : 'text-amber-300'" x-text="codeMsg"></p>
-                        <p class="text-[11px] text-slate-400 text-center">Payments are processed securely by PayMongo.</p>
                     </div>
                 </div>
             </div>
@@ -912,18 +918,18 @@
 
     <!-- App Data & Logic -->
     <script>
-        /* ===== BILLING CONFIG (PayMongo + access codes) =====
-           1. In the PayMongo dashboard create a Payment Link for each pass and paste its URL into `link`.
-           2. Set `contact` to the email or Facebook page where customers send their payment receipt.
-           3. Customers receive an access code from you. Generate codes with make-codes.py and paste the
-              printed hash lines into `codeHashes` (the plain codes never appear in this file).
-           4. Prices below are placeholders: set them to match your PayMongo links. */
+        /* ===== BILLING CONFIG (manual GCash + access codes) =====
+           1. Set `contact` to the email address where customers should write to you.
+           2. Customers email you, you reply with your GCash details, they pay and send the receipt.
+           3. After checking the payment, email them an access code. Generate codes with make-codes.py
+              and paste the printed hash lines into `codeHashes` (plain codes never appear in this file).
+           4. Prices below are placeholders: change them to your own. */
         const BILLING = {
             freeDays: 7,
-            contact: 'YOUR-EMAIL-OR-FACEBOOK-PAGE',
+            contact: 'cherbbinondzo@gmail.com',
             plans: [
-                { id: 'pass30', name: '30-Day Pass', price: '\u20B1299', per: ' / 30 days', note: '', link: '' },
-                { id: 'pass365', name: '1-Year Pass', price: '\u20B11,999', per: ' / year', note: 'Best value', link: '' }
+                { id: 'pass30', name: '30-Day Pass', price: '\u20B1299', per: ' / 30 days', note: '' },
+                { id: 'pass365', name: '1-Year Pass', price: '\u20B11,999', per: ' / year', note: 'Best value' }
             ],
             codeHashes: {
                 '0502874b0eef37248e720987e2340c000f45bd9d6b6f613a0cdab79db20edd39': 30,
@@ -958,6 +964,7 @@
                 subUntil: Number(localStorage.getItem('english_sub_until_v1') || 0),
                 code: '',
                 codeMsg: '',
+                copied: false,
                 drillActive: false, drillQs: [], drillIdx: 0, drillPick: null, drillScore: 0, drillDone: false,
                 completedDays: JSON.parse(localStorage.getItem('english_completed_days_absolute_v14') || '[]'),
                 
@@ -1189,9 +1196,32 @@
                     return this.billing.plans.find(x => x.id === this.selectedPlan) || this.billing.plans[0];
                 },
 
-                openPayment() {
-                    if (this.plan.link) window.open(this.plan.link, '_blank', 'noopener');
-                    else this.codeMsg = 'The payment link is not set up yet. Please check back soon.';
+                mailDraft() {
+                    const c = this.billing.contact;
+                    if (!c || c.includes('YOUR-')) { this.codeMsg = 'The contact email is not set up yet.'; return null; }
+                    return {
+                        to: c,
+                        subject: 'NBJ English Premium: ' + this.plan.name,
+                        body: 'Hello! I would like the ' + this.plan.name + ' (' + this.plan.price + ') for the NBJ 30-Day English Mastery app. Please send me your GCash payment details.'
+                    };
+                },
+
+                requestPayment() {
+                    const m = this.mailDraft();
+                    if (m) window.location.href = 'mailto:' + m.to + '?subject=' + encodeURIComponent(m.subject) + '&body=' + encodeURIComponent(m.body);
+                },
+
+                openGmail() {
+                    const m = this.mailDraft();
+                    if (m) window.open('https://mail.google.com/mail/?view=cm&fs=1&to=' + encodeURIComponent(m.to) + '&su=' + encodeURIComponent(m.subject) + '&body=' + encodeURIComponent(m.body), '_blank', 'noopener');
+                },
+
+                copyContact() {
+                    if (!navigator.clipboard) return;
+                    navigator.clipboard.writeText(this.billing.contact).then(() => {
+                        this.copied = true;
+                        setTimeout(() => { this.copied = false; }, 1500);
+                    });
                 },
 
                 async redeemCode() {
