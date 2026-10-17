@@ -1,0 +1,1407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>30-Day English Mastery Curriculum</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', sans-serif; }
+        @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+        @keyframes pop { 0% { transform: scale(.7); } 60% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        .rise { animation: rise .5s ease both; }
+        .pop { animation: pop .5s ease both; }
+        .glass-logo {
+            position: relative; overflow: hidden; color: #fff; letter-spacing: .06em;
+            background: linear-gradient(135deg, rgba(255,255,255,.50), rgba(255,255,255,.12));
+            -webkit-backdrop-filter: blur(12px) saturate(170%); backdrop-filter: blur(12px) saturate(170%);
+            border: 1px solid rgba(255,255,255,.60);
+            box-shadow: 0 8px 22px rgba(76,29,149,.35), inset 0 1px 0 rgba(255,255,255,.85), inset 0 -10px 18px rgba(255,255,255,.10);
+            text-shadow: 0 1px 6px rgba(76,29,149,.55);
+        }
+        .glass-logo::before {
+            content: ""; position: absolute; top: -45%; left: -25%; width: 95%; height: 95%; pointer-events: none;
+            background: radial-gradient(closest-side, rgba(255,255,255,.70), rgba(255,255,255,0));
+        }
+        .glass-logo::after {
+            content: ""; position: absolute; top: 0; left: -80%; width: 40%; height: 100%; pointer-events: none;
+            background: linear-gradient(100deg, transparent, rgba(255,255,255,.55), transparent);
+            transform: skewX(-20deg); animation: shine 5s ease-in-out infinite;
+        }
+        @keyframes shine { 0% { left: -80%; } 55%, 100% { left: 140%; } }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-thumb { background: #c4b5fd; border-radius: 8px; }
+    </style>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { 50: '#f5f3ff', 500: '#8b5cf6', 600: '#7c3aed', 700: '#6d28d9' }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Alpine.js CDN -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body class="bg-gradient-to-br from-indigo-50 via-fuchsia-50 to-amber-50 text-slate-800 antialiased min-h-screen flex flex-col" x-data="appData()">
+
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 sticky top-0 z-30 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="glass-logo px-3.5 py-2 rounded-2xl font-extrabold text-lg select-none" aria-label="NBJ logo">NBJ</div>
+                <div>
+                    <h1 class="text-xl font-bold text-white">30-Day English Mastery</h1>
+                    <p class="text-xs text-indigo-100">Comprehensive Curriculum & 50-Item Unique Proficiency Suite</p>
+                </div>
+            </div>
+            <button x-show="!subscribed" @click="currentDay = billing.freeDays + 1; resetAll(); window.scrollTo({ top: 0, behavior: 'smooth' })"
+                class="bg-amber-400 text-slate-900 text-xs font-bold px-4 py-2 rounded-xl shadow-md hover:bg-amber-300">Go Premium</button>
+            <span x-show="subscribed" class="bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold px-3 py-2 rounded-xl">Premium &#10003;</span>
+            <div class="flex items-center gap-2 bg-orange-50 border border-orange-200 text-orange-700 rounded-xl px-3 py-2 text-xs font-bold">
+                <span>&#128293;</span><span x-text="liveStreak + '-day streak'"></span>
+            </div>
+            <!-- Progress Bar -->
+            <div class="w-full sm:w-72 bg-white/15 rounded-full p-1 border border-white/25">
+                <div class="flex justify-between text-xs font-semibold px-2 mb-1">
+                    <span class="text-white">Overall Progress</span>
+                    <span class="text-amber-200" x-text="completedCount + ' / 30 Days ( ' + Math.round((completedCount/30)*100) + '% )'"></span>
+                </div>
+                <div class="w-full bg-white/30 rounded-full h-2 overflow-hidden">
+                    <div class="bg-amber-300 h-2 rounded-full transition-all duration-500" :style="'width: ' + ((completedCount / 30) * 100) + '%'"></div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- View Tabs -->
+    <nav class="max-w-7xl mx-auto w-full px-4 pt-6 flex flex-wrap gap-2">
+        <button @click="view = 'curriculum'" class="px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm"
+            :class="view === 'curriculum' ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-indigo-50'">30-Day Curriculum</button>
+        <button @click="view = 'basics'" class="px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm flex items-center gap-2"
+            :class="view === 'basics' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-emerald-50'">
+            Basics Review
+            <span class="text-xs rounded-full px-2 py-0.5" :class="view === 'basics' ? 'bg-white/30' : 'bg-emerald-100 text-emerald-700'" x-text="basicsMastered + '/9'"></span>
+        </button>
+        <button @click="view = 'phonetics'" class="px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm flex items-center gap-2"
+            :class="view === 'phonetics' ? 'bg-gradient-to-r from-rose-500 to-orange-500 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-rose-50'">
+            Pronunciation
+            <span class="text-xs rounded-full px-2 py-0.5" :class="view === 'phonetics' ? 'bg-white/30' : 'bg-rose-100 text-rose-700'" x-text="phonMastered + '/9'"></span>
+        </button>
+    </nav>
+
+    <!-- Main Container -->
+    <main x-show="view === 'curriculum'" class="max-w-7xl mx-auto px-4 py-8 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8 w-full">
+        
+        <!-- Sidebar: Day Selector -->
+        <aside class="lg:col-span-4 bg-white rounded-2xl border border-indigo-100 shadow-lg shadow-indigo-100 p-4 flex flex-col max-h-[85vh] sticky top-24">
+            <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-3 px-2">Curriculum Roadmap</h2>
+            <div class="overflow-y-auto space-y-4 pr-1 flex-1">
+                <template x-for="phaseGroup in phases" :key="phaseGroup.id">
+                    <div>
+                        <div class="text-xs font-bold px-2 py-1.5 rounded-md mb-2" :class="{1: 'bg-sky-100 text-sky-700', 2: 'bg-emerald-100 text-emerald-700', 3: 'bg-amber-100 text-amber-800', 4: 'bg-fuchsia-100 text-fuchsia-700'}[phaseGroup.id]" x-text="phaseGroup.name"></div>
+                        <div class="grid grid-cols-1 gap-1">
+                            <template x-for="day in phaseGroup.days" :key="day">
+                                <button @click="currentDay = day; resetAll()"
+                                    class="flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-sm transition-all"
+                                    :class="{
+                                        'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md': currentDay === day,
+                                        'bg-white border border-slate-100 hover:bg-indigo-50 hover:border-indigo-200 text-slate-700': currentDay !== day && !isCompleted(day),
+                                        'bg-emerald-50 text-emerald-900 border border-emerald-200': isCompleted(day) && currentDay !== day
+                                    }">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="font-semibold text-xs px-1.5 py-0.5 rounded" :class="currentDay === day ? 'bg-white/25 text-white' : 'bg-indigo-100 text-indigo-700'" x-text="'Day ' + day"></span>
+                                        <span class="truncate max-w-[180px]" x-text="getLesson(day).title"></span>
+                                    </div>
+                                    <span x-show="isCompleted(day)" class="text-emerald-600 text-xs font-bold">✓</span>
+                                    <span x-show="isLocked(day)" class="text-xs">&#128274;</span>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </aside>
+
+        <!-- Content Area: Lesson Discussion & 50-Item Test -->
+        <section class="lg:col-span-8 flex flex-col gap-6">
+            
+            <!-- Streak & Badges -->
+            <div class="rise bg-gradient-to-r from-orange-50 via-pink-50 to-purple-50 rounded-2xl border border-pink-100 shadow-lg shadow-pink-100/60 p-5 flex flex-col sm:flex-row gap-5 sm:items-center sm:justify-between">
+                <div>
+                    <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2" x-text="'Last 28 days \u2022 best streak ' + (streak.best || 0)"></div>
+                    <div class="flex flex-wrap gap-1 max-w-[270px]">
+                        <template x-for="d in heatmap" :key="d.k">
+                            <span class="w-4 h-4 rounded-sm" :class="d.on ? 'bg-orange-500' : 'bg-slate-200'" :title="d.k"></span>
+                        </template>
+                    </div>
+                </div>
+                <div class="flex flex-wrap gap-2 sm:justify-end">
+                    <template x-for="b in badges" :key="b">
+                        <span class="text-xs font-semibold px-3 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200" x-text="b"></span>
+                    </template>
+                    <span x-show="badges.length === 0" class="text-xs text-slate-400">Finish a test to earn your first badge.</span>
+                </div>
+            </div>
+
+            <!-- Lesson Card -->
+            <!-- Lock Screen & Pricing -->
+            <div x-show="isLocked(currentDay)" class="rise bg-white rounded-2xl border border-slate-200 border-t-4 border-t-pink-500 shadow-lg shadow-indigo-100/60 p-6 sm:p-8">
+                <div class="text-center mb-6">
+                    <div class="text-4xl mb-2">&#128274;</div>
+                    <h2 class="text-2xl font-extrabold text-slate-900" x-text="'Day ' + currentDay + ': ' + getLesson(currentDay).title"></h2>
+                    <p class="text-sm text-slate-500 mt-2" x-text="'Days 1-' + billing.freeDays + ' are free. Unlock the other ' + (30 - billing.freeDays) + ' days to keep building your English.'"></p>
+                </div>
+                <div class="max-w-md mx-auto bg-slate-900 text-white rounded-2xl p-6 shadow-lg">
+                    <div class="text-xs font-bold uppercase tracking-widest text-indigo-300 mb-3">Premium Access</div>
+                    <div class="grid grid-cols-2 gap-2 mb-5">
+                        <template x-for="pl in billing.plans" :key="pl.id">
+                            <button @click="selectedPlan = pl.id" class="rounded-xl border p-3 text-left transition-all"
+                                :class="selectedPlan === pl.id ? 'border-brand-500 bg-brand-600/20' : 'border-slate-700 bg-slate-800 hover:bg-slate-700'">
+                                <div class="text-xs text-slate-300" x-text="pl.name"></div>
+                                <div class="text-2xl font-extrabold"><span x-text="pl.price"></span><span class="text-xs font-medium text-slate-400" x-text="pl.per"></span></div>
+                                <div class="text-[11px] text-emerald-400 font-semibold min-h-[1rem]" x-text="pl.note"></div>
+                            </button>
+                        </template>
+                    </div>
+                    <ul class="space-y-2 text-sm text-slate-200 mb-6">
+                        <li class="flex gap-2"><span class="text-emerald-400">&#10003;</span><span x-text="'All ' + (30 - billing.freeDays) + ' locked days: full lessons and 50-question tests'"></span></li>
+                        <li class="flex gap-2"><span class="text-emerald-400">&#10003;</span><span>Weak-Spot Coach that finds the patterns you keep missing</span></li>
+                        <li class="flex gap-2"><span class="text-emerald-400">&#10003;</span><span>Unlimited 5-minute Fix-It drills with fresh sentences</span></li>
+                    </ul>
+                    <button @click="subscribe()" class="w-full bg-brand-600 hover:bg-brand-500 text-white font-bold py-3 rounded-xl shadow-md transition-all" x-text="'Subscribe for ' + plan.price + plan.per"></button>
+                    <p class="text-[11px] text-slate-400 text-center mt-3">Secure checkout by Stripe</p>
+                </div>
+            </div>
+
+            <!-- Lesson Card -->
+            <div x-show="!isLocked(currentDay)" class="rise bg-white rounded-2xl border border-slate-200 border-t-4 border-t-indigo-500 shadow-lg shadow-indigo-100/60 p-6 sm:p-8 flex flex-col justify-between">
+                <div>
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-xs font-bold uppercase tracking-wider px-3 py-1 bg-gradient-to-r from-indigo-500 to-pink-500 text-white rounded-full" x-text="'Phase ' + currentLesson.phase + ' • Day ' + currentDay"></span>
+                        <button @click="toggleComplete(currentDay)" 
+                            class="text-xs font-semibold px-4 py-2 rounded-xl transition-all shadow-sm"
+                            :class="isCompleted(currentDay) ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'"
+                            x-text="isCompleted(currentDay) ? 'Completed ✓' : 'Mark as Completed'">
+                        </button>
+                    </div>
+
+                    <h2 class="text-2xl sm:text-3xl font-extrabold bg-gradient-to-r from-indigo-600 to-pink-500 bg-clip-text text-transparent mb-2" x-text="currentLesson.title"></h2>
+                    <p class="text-sm font-medium text-brand-600 mb-6" x-text="'Objective: ' + currentLesson.objective"></p>
+
+                    <!-- Comprehensive Discussion Section -->
+                    <div class="space-y-6 border-t border-slate-100 pt-6 mb-8">
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                <span class="bg-sky-500 text-white w-5 h-5 rounded-full inline-flex items-center justify-center text-xs">1</span>
+                                CORE DISCUSSION & CONCEPT
+                            </h3>
+                            <p class="text-slate-700 leading-relaxed text-sm sm:text-base bg-sky-50 p-4 rounded-xl border border-sky-200" x-text="currentLesson.comprehensive_discussion"></p>
+                        </div>
+
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                <span class="bg-purple-500 text-white w-5 h-5 rounded-full inline-flex items-center justify-center text-xs">2</span>
+                                STRUCTURAL RULES & KEY USAGE
+                            </h3>
+                            <div class="bg-purple-50 p-4 rounded-xl border border-purple-200 text-slate-800 text-sm sm:text-base leading-relaxed">
+                                <p class="whitespace-pre-line font-medium text-slate-800" x-text="currentLesson.structural_rules"></p>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                <span class="bg-emerald-500 text-white w-5 h-5 rounded-full inline-flex items-center justify-center text-xs">3</span>
+                                CONTEXTUAL EXAMPLES &middot; 10 PER DAY
+                            </h3>
+                            <ul class="space-y-2.5 bg-emerald-50 p-4 rounded-xl border border-emerald-200">
+                                <template x-for="(ex, index) in lessonExamples" :key="index">
+                                    <li class="text-xs sm:text-sm text-slate-700 flex items-start gap-2">
+                                        <span class="bg-emerald-500 text-white text-[10px] font-bold w-5 h-5 rounded-full inline-flex items-center justify-center shrink-0" x-text="index + 1"></span>
+                                        <span class="font-medium" x-html="ex"></span>
+                                    </li>
+                                </template>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 50-Item Assessment Container -->
+                <div class="bg-gradient-to-br from-slate-900 via-indigo-950 to-purple-950 text-white rounded-2xl p-6 sm:p-8 shadow-inner mt-2">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-800">
+                        <div>
+                            <span class="text-xs font-bold uppercase tracking-widest text-indigo-400">PROFESSIONAL PROFICIENCY ASSESSMENT</span>
+                            <h3 class="text-lg font-bold text-white">50-Item Unique Mastery Test Suite</h3>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 text-slate-300" x-text="'Answered: ' + answeredCount + ' / 50'"></span>
+                            <button @click="startTest()" x-show="!testActive && !testSubmitted"
+                                class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold px-5 py-2.5 rounded-xl transition-all shadow-md">
+                                Launch 50-Item Test
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Pre-Test State -->
+                    <template x-if="!testActive && !testSubmitted">
+                        <div class="text-center py-8">
+                            <p class="text-slate-400 text-sm mb-4">Evaluate your understanding of Day <span x-text="currentDay"></span> across 5 structured blocks with 50 completely unique, grammatically precise sentences.</p>
+                            <button @click="startTest()" class="bg-brand-600 hover:bg-brand-500 text-white font-semibold px-8 py-3 rounded-xl text-sm transition-all shadow-lg">
+                                Begin 50-Item Test Now
+                            </button>
+                        </div>
+                    </template>
+
+                    <!-- Active Test State -->
+                    <template x-if="testActive">
+                        <div class="space-y-6">
+                            <!-- Block Selector Tabs -->
+                            <div class="flex flex-wrap gap-2 pb-2 border-b border-slate-800">
+                                <template x-for="block in 5" :key="block">
+                                    <button @click="currentBlock = block"
+                                        class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                                        :class="currentBlock === block ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'"
+                                        x-text="'Block ' + block + ' (Q' + ((block-1)*10 + 1) + '-' + (block*10) + ')'">
+                                    </button>
+                                </template>
+                            </div>
+
+                            <!-- Question List for Current Block -->
+                            <div class="space-y-6 max-h-[600px] overflow-y-auto pr-2">
+                                <template x-for="qIndex in 10" :key="getGlobalIndex(currentBlock, qIndex)">
+                                    <div class="bg-white/5 p-4 rounded-xl border border-white/10">
+                                        <div class="flex justify-between items-center mb-2">
+                                            <span class="text-xs font-bold text-indigo-300" x-text="'Question ' + getGlobalIndex(currentBlock, qIndex) + ' of 50'"></span>
+                                            <span class="text-xs text-slate-400" x-text="getQuestionData(getGlobalIndex(currentBlock, qIndex)).category"></span>
+                                        </div>
+                                        <p class="text-sm font-medium mb-3 text-slate-200" x-text="getQuestionData(getGlobalIndex(currentBlock, qIndex)).prompt"></p>
+                                        
+                                        <!-- Options Grid -->
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                            <template x-for="opt in getQuestionData(getGlobalIndex(currentBlock, qIndex)).options" :key="opt">
+                                                <button @click="userAnswers[getGlobalIndex(currentBlock, qIndex)] = opt"
+                                                    class="p-2.5 rounded-lg text-left text-xs font-medium transition-all border"
+                                                    :class="{
+                                                        'bg-brand-600 border-brand-500 text-white': userAnswers[getGlobalIndex(currentBlock, qIndex)] === opt && !testSubmitted,
+                                                        'bg-slate-700/60 border-slate-600 text-slate-300 hover:bg-slate-700': userAnswers[getGlobalIndex(currentBlock, qIndex)] !== opt && !testSubmitted,
+                                                        'bg-emerald-600 border-emerald-500 text-white': testSubmitted && opt === getQuestionData(getGlobalIndex(currentBlock, qIndex)).correct,
+                                                        'bg-rose-900/60 border-rose-700 text-rose-200': testSubmitted && userAnswers[getGlobalIndex(currentBlock, qIndex)] === opt && opt !== getQuestionData(getGlobalIndex(currentBlock, qIndex)).correct,
+                                                        'bg-slate-800 border-slate-800 text-slate-500': testSubmitted && opt !== getQuestionData(getGlobalIndex(currentBlock, qIndex)).correct && opt !== userAnswers[getGlobalIndex(currentBlock, qIndex)]
+                                                    }"
+                                                    :disabled="testSubmitted"
+                                                    x-text="opt">
+                                                </button>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <!-- Test Navigation & Submit Bar -->
+                            <div class="flex items-center justify-between pt-4 border-t border-slate-800">
+                                <div class="text-xs text-slate-400">
+                                    <span x-text="answeredCount"></span> / 50 items answered
+                                </div>
+                                <div class="flex gap-2">
+                                    <button @click="currentBlock = currentBlock > 1 ? currentBlock - 1 : 1" x-show="currentBlock > 1"
+                                        class="bg-slate-800 hover:bg-slate-700 text-xs font-semibold px-4 py-2 rounded-xl">
+                                        Previous Block
+                                    </button>
+                                    <button @click="currentBlock = currentBlock < 5 ? currentBlock + 1 : 5" x-show="currentBlock < 5"
+                                        class="bg-slate-800 hover:bg-slate-700 text-xs font-semibold px-4 py-2 rounded-xl">
+                                        Next Block
+                                    </button>
+                                    <button @click="submitTest()"
+                                        class="bg-emerald-600 hover:bg-emerald-500 text-xs font-bold px-6 py-2 rounded-xl shadow-md">
+                                        Submit 50-Item Test
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Test Results State -->
+                    <template x-if="testSubmitted">
+                        <div class="text-center py-6 space-y-4">
+                            <div class="inline-block p-4 rounded-2xl bg-slate-800 border border-slate-700">
+                                <span class="text-xs uppercase tracking-wider text-slate-400 block mb-1">Final Test Score</span>
+                                <span class="pop inline-block text-4xl font-extrabold" :class="finalScore >= 38 ? 'text-emerald-400' : 'text-amber-400'" x-text="finalScore + ' / 50'"></span>
+                                <p class="text-xs text-slate-300 mt-2" x-text="finalScore >= 38 ? 'Outstanding mastery! Day marked as completed.' : 'Review the core discussion and retake the assessment.'"></p>
+                            </div>
+                            <div>
+                                <button @click="resetAll()" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold px-6 py-2.5 rounded-xl transition-all">
+                                    Retake Test
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Weak Spots & Fix-It Drill -->
+                    <template x-if="testSubmitted">
+                        <div class="mt-2 space-y-5 border-t border-slate-800 pt-6 text-left">
+                            <div x-show="!subscribed" class="bg-gradient-to-r from-indigo-900/60 to-purple-900/60 border border-indigo-500/40 rounded-xl p-4 text-center space-y-2">
+                                <p class="text-sm font-bold text-white">&#128274; Weak-Spot Coach is a Premium feature</p>
+                                <p class="text-xs text-slate-300">See exactly which grammar patterns cost you points and fix them with targeted drills.</p>
+                                <button @click="currentDay = billing.freeDays + 1; resetAll(); window.scrollTo({ top: 0, behavior: 'smooth' })" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold px-5 py-2 rounded-xl">See Premium plans</button>
+                            </div>
+                            <div x-show="subscribed">
+                                <h4 class="text-sm font-bold text-white mb-2">Your Weak Spots</h4>
+                                <p x-show="weakSpots.length === 0" class="text-xs text-slate-400">No weak spots yet. Every tested day is at 85% or above.</p>
+                                <div class="space-y-2">
+                                    <template x-for="w in weakSpots" :key="w.day">
+                                        <div class="bg-slate-800 border border-slate-700 rounded-xl p-3">
+                                            <div class="flex justify-between text-xs">
+                                                <span class="font-semibold text-slate-200" x-text="'Day ' + w.day + ' \u2022 ' + w.title"></span>
+                                                <span class="text-amber-400 font-bold" x-text="w.r + '/' + w.t + ' (' + w.pct + '%)'"></span>
+                                            </div>
+                                            <div class="h-1.5 bg-slate-700 rounded-full mt-2 overflow-hidden"><div class="h-1.5 bg-amber-400 rounded-full" :style="'width:' + w.pct + '%'"></div></div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+
+                            <details x-show="missed.length > 0" class="bg-slate-800/60 border border-slate-700 rounded-xl p-3">
+                                <summary class="text-xs font-semibold text-slate-300 cursor-pointer" x-text="'Review your ' + missed.length + ' missed questions'"></summary>
+                                <ul class="mt-3 space-y-3 max-h-72 overflow-y-auto pr-1">
+                                    <template x-for="m in missed" :key="m.n">
+                                        <li class="text-xs text-slate-300">
+                                            <span class="text-slate-500" x-text="'Q' + m.n + ': '"></span><span x-text="m.p"></span>
+                                            <div class="mt-1"><span class="text-rose-300" x-text="'You: ' + m.y"></span> <span class="text-emerald-300" x-text="' \u2022 Correct: ' + m.c"></span></div>
+                                        </li>
+                                    </template>
+                                </ul>
+                            </details>
+
+                            <div class="text-center" x-show="subscribed && !drillActive">
+                                <button @click="startDrill()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-6 py-2.5 rounded-xl shadow-md">Start 5-Minute Fix-It Drill</button>
+                            </div>
+
+                            <template x-if="drillActive">
+                                <div class="bg-slate-800 border border-indigo-500/40 rounded-xl p-4 space-y-3">
+                                    <template x-if="!drillDone">
+                                        <div class="space-y-3">
+                                            <div class="flex justify-between text-xs">
+                                                <span class="font-bold text-indigo-300" x-text="'Fix-It ' + (drillIdx + 1) + ' / ' + drillQs.length"></span>
+                                                <span class="text-slate-400" x-text="'Day ' + drillQs[drillIdx].day"></span>
+                                            </div>
+                                            <p class="text-sm font-medium text-slate-200" x-text="drillQs[drillIdx].p"></p>
+                                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                                <template x-for="opt in drillQs[drillIdx].o" :key="opt">
+                                                    <button @click="answerDrill(opt)" :disabled="drillPick !== null"
+                                                        class="p-2.5 rounded-lg text-left text-xs font-medium border transition-all"
+                                                        :class="drillPick === null ? 'bg-slate-700/60 border-slate-600 text-slate-300 hover:bg-slate-700' : (opt === drillQs[drillIdx].c ? 'bg-emerald-600 border-emerald-500 text-white' : (opt === drillPick ? 'bg-rose-900/60 border-rose-700 text-rose-200' : 'bg-slate-800 border-slate-800 text-slate-500'))"
+                                                        x-text="opt"></button>
+                                                </template>
+                                            </div>
+                                            <div class="text-right" x-show="drillPick !== null">
+                                                <button @click="nextDrill()" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold px-5 py-2 rounded-xl" x-text="drillIdx === drillQs.length - 1 ? 'Finish' : 'Next'"></button>
+                                            </div>
+                                        </div>
+                                    </template>
+                                    <template x-if="drillDone">
+                                        <div class="text-center space-y-3">
+                                            <p class="text-lg font-bold text-white" x-text="'Drill score: ' + drillScore + ' / ' + drillQs.length"></p>
+                                            <button @click="startDrill()" class="bg-slate-700 hover:bg-slate-600 text-white text-xs font-semibold px-5 py-2 rounded-xl">Drill again</button>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Basics Review -->
+    <main x-show="view === 'basics'" class="max-w-7xl mx-auto px-4 py-6 flex-1 w-full space-y-6">
+        <div class="rise rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-white p-6 sm:p-8 shadow-lg">
+            <h2 class="text-2xl sm:text-3xl font-extrabold">Start Here: Basics Review</h2>
+            <p class="text-sm sm:text-base text-emerald-50 mt-2 max-w-2xl">New to English grammar? Learn the sentence's two parts and the 8 parts of speech in about 5 minutes each. Read the ideas, study the examples, then score 3 out of 3 on the quick quiz to master each topic.</p>
+            <div class="mt-4 max-w-sm">
+                <div class="flex justify-between text-xs font-semibold mb-1"><span>Basics mastered</span><span x-text="basicsMastered + ' / ' + basics.length"></span></div>
+                <div class="h-2 bg-white/30 rounded-full overflow-hidden"><div class="h-2 bg-amber-300 rounded-full transition-all duration-500" :style="'width:' + (basicsMastered / basics.length * 100) + '%'"></div></div>
+            </div>
+        </div>
+
+        <div class="flex flex-wrap gap-2">
+            <template x-for="(t, ti) in basics" :key="t.id">
+                <button @click="basicTopic = ti" class="px-3 py-2 rounded-xl text-xs font-bold transition-all border flex items-center gap-1.5"
+                    :class="basicTopic === ti ? 'bg-slate-900 text-white border-slate-900 shadow-md' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'">
+                    <span x-text="t.icon"></span><span x-text="(ti + 1) + '. ' + t.title"></span>
+                    <span x-show="bBest[t.id] === 3" class="text-emerald-500">&#10003;</span>
+                </button>
+            </template>
+        </div>
+
+        <div class="rise bg-white rounded-2xl border border-slate-200 shadow-lg shadow-indigo-100/60 overflow-hidden" :key="basicTopic">
+            <div class="bg-gradient-to-r text-white p-5 sm:p-6 flex items-center justify-between" :class="bt.grad">
+                <div class="flex items-center gap-3">
+                    <span class="text-3xl" x-text="bt.icon"></span>
+                    <div>
+                        <div class="text-xs font-semibold uppercase tracking-wider text-white/80" x-text="'Topic ' + (basicTopic + 1) + ' of ' + basics.length"></div>
+                        <h3 class="text-xl sm:text-2xl font-extrabold" x-text="bt.title"></h3>
+                    </div>
+                </div>
+                <span x-show="bBest[bt.id] === 3" class="text-xs font-bold bg-white/25 rounded-full px-3 py-1">Mastered &#10003;</span>
+            </div>
+
+            <div class="p-5 sm:p-6 space-y-6">
+                <p class="text-base sm:text-lg text-slate-700 leading-relaxed" x-text="bt.intro"></p>
+
+                <div>
+                    <h4 class="text-sm font-bold uppercase tracking-wider text-slate-900 mb-3">Key Ideas</h4>
+                    <ol class="space-y-2.5">
+                        <template x-for="(pt, pi) in bt.points" :key="pi">
+                            <li class="flex gap-3 items-start text-sm sm:text-base text-slate-700">
+                                <span class="bg-gradient-to-r text-white text-xs font-bold w-6 h-6 rounded-full inline-flex items-center justify-center shrink-0" :class="bt.grad" x-text="pi + 1"></span>
+                                <span x-text="pt"></span>
+                            </li>
+                        </template>
+                    </ol>
+                </div>
+
+                <div>
+                    <h4 class="text-sm font-bold uppercase tracking-wider text-slate-900 mb-3">See It In Action</h4>
+                    <p class="text-xs text-slate-500 mb-3" x-show="basicTopic === 0"><span class="px-1.5 py-0.5 rounded bg-sky-100 text-sky-800 font-semibold">Subject</span> <span class="px-1.5 py-0.5 rounded bg-pink-100 text-pink-800 font-semibold">Predicate</span></p>
+                    <p class="text-xs text-slate-500 mb-3" x-show="basicTopic !== 0">The highlighted word shows the part of speech.</p>
+                    <ul class="space-y-2 bg-slate-50 rounded-xl border border-slate-200 p-4">
+                        <template x-for="(ex, ei) in bt.examples" :key="ei">
+                            <li class="text-sm sm:text-base text-slate-800 leading-loose" x-html="fmt(ex)"></li>
+                        </template>
+                    </ul>
+                </div>
+
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <h4 class="text-sm font-bold uppercase tracking-wider text-slate-900">Quick Quiz</h4>
+                        <span class="text-xs font-bold px-3 py-1 rounded-full bg-indigo-100 text-indigo-700" x-text="'Score: ' + topicScore(basicTopic) + ' / 3'"></span>
+                    </div>
+                    <div class="space-y-4">
+                        <template x-for="(q, qi) in bt.quiz" :key="basicTopic + '-' + qi">
+                            <div class="rounded-xl border border-slate-200 p-4">
+                                <p class="text-sm font-semibold text-slate-900 mb-3" x-text="(qi + 1) + '. ' + q.q"></p>
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                    <template x-for="(opt, oi) in q.o" :key="oi">
+                                        <button @click="pickB(qi, oi)" class="p-2.5 rounded-lg border text-left text-xs sm:text-sm font-medium transition-all" :class="optClass(qi, oi)" x-text="opt"></button>
+                                    </template>
+                                </div>
+                                <p x-show="bAns[basicTopic + '-' + qi] !== undefined" class="mt-3 text-xs text-slate-600" x-text="(bAns[basicTopic + '-' + qi] === q.a ? 'Correct! ' : 'Not quite. ') + q.e"></p>
+                            </div>
+                        </template>
+                    </div>
+                    <div x-show="topicDone(basicTopic)" class="mt-4 text-center text-sm font-semibold" :class="topicScore(basicTopic) === 3 ? 'text-emerald-600' : 'text-amber-600'"
+                        x-text="topicScore(basicTopic) === 3 ? 'Perfect score. You have mastered this topic!' : 'Review the key ideas, then try again for 3 / 3.'"></div>
+                </div>
+
+                <div class="flex items-center justify-between pt-4 border-t border-slate-100">
+                    <button @click="basicTopic = Math.max(0, basicTopic - 1)" x-show="basicTopic > 0" class="text-xs font-bold px-4 py-2 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200">&larr; Previous</button>
+                    <span x-show="basicTopic === 0"></span>
+                    <button @click="retryTopic()" x-show="topicDone(basicTopic)" class="text-xs font-bold px-4 py-2 rounded-xl bg-amber-100 text-amber-800 hover:bg-amber-200">Retry quiz</button>
+                    <button @click="basicTopic = Math.min(basics.length - 1, basicTopic + 1)" x-show="basicTopic < basics.length - 1" class="text-xs font-bold px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:opacity-90">Next topic &rarr;</button>
+                    <button @click="view = 'curriculum'; currentDay = 1; resetAll()" x-show="basicTopic === basics.length - 1" class="text-xs font-bold px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:opacity-90">Start Day 1 &rarr;</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Pronunciation & Phonetics -->
+    <main x-show="view === 'phonetics'" class="max-w-7xl mx-auto px-4 py-6 flex-1 w-full space-y-6">
+        <div class="rise rounded-2xl bg-gradient-to-r from-rose-500 via-orange-500 to-amber-500 text-white p-6 sm:p-8 shadow-lg">
+            <h2 class="text-2xl sm:text-3xl font-extrabold">Pronunciation & Phonetics</h2>
+            <p class="text-sm sm:text-base text-orange-50 mt-2 max-w-2xl">Learn how English really sounds. Tap a word to hear it, say it out loud, then check yourself with the quiz. Use the slow button to hear each sound clearly.</p>
+            <p x-show="!canSpeak" class="text-xs bg-white/20 rounded-lg px-3 py-2 mt-3 max-w-md">Audio is not available in this browser. Try Chrome, Edge, or Safari to hear the words.</p>
+            <div class="mt-4 max-w-sm">
+                <div class="flex justify-between text-xs font-semibold mb-1"><span>Pronunciation topics mastered</span><span x-text="phonMastered + ' / ' + phon.length"></span></div>
+                <div class="h-2 bg-white/30 rounded-full overflow-hidden"><div class="h-2 bg-white rounded-full transition-all duration-500" :style="'width:' + (phonMastered / phon.length * 100) + '%'"></div></div>
+            </div>
+        </div>
+
+        <div class="flex flex-wrap gap-2">
+            <template x-for="(t, ti) in phon" :key="t.id">
+                <button @click="pTopic = ti" class="px-3 py-2 rounded-xl text-xs font-bold transition-all border flex items-center gap-1.5"
+                    :class="pTopic === ti ? 'bg-slate-900 text-white border-slate-900 shadow-md' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'">
+                    <span x-text="t.icon"></span><span x-text="(ti + 1) + '. ' + t.title"></span>
+                    <span x-show="pBest[t.id] === 3" class="text-emerald-500">&#10003;</span>
+                </button>
+            </template>
+        </div>
+
+        <div class="rise bg-white rounded-2xl border border-slate-200 shadow-lg shadow-rose-100/60 overflow-hidden">
+            <div class="bg-gradient-to-r text-white p-5 sm:p-6 flex items-center justify-between" :class="pt.grad">
+                <div class="flex items-center gap-3">
+                    <span class="text-3xl" x-text="pt.icon"></span>
+                    <div>
+                        <div class="text-xs font-semibold uppercase tracking-wider text-white/80" x-text="'Topic ' + (pTopic + 1) + ' of ' + phon.length"></div>
+                        <h3 class="text-xl sm:text-2xl font-extrabold" x-text="pt.title"></h3>
+                    </div>
+                </div>
+                <span x-show="pBest[pt.id] === 3" class="text-xs font-bold bg-white/25 rounded-full px-3 py-1">Mastered &#10003;</span>
+            </div>
+
+            <div class="p-5 sm:p-6 space-y-6">
+                <p class="text-base sm:text-lg text-slate-700 leading-relaxed" x-text="pt.intro"></p>
+
+                <div>
+                    <h4 class="text-sm font-bold uppercase tracking-wider text-slate-900 mb-3">Key Ideas</h4>
+                    <ol class="space-y-2.5">
+                        <template x-for="(pt2, pi) in pt.points" :key="pi">
+                            <li class="flex gap-3 items-start text-sm sm:text-base text-slate-700">
+                                <span class="bg-gradient-to-r text-white text-xs font-bold w-6 h-6 rounded-full inline-flex items-center justify-center shrink-0" :class="pt.grad" x-text="pi + 1"></span>
+                                <span x-text="pt2"></span>
+                            </li>
+                        </template>
+                    </ol>
+                </div>
+
+                <div>
+                    <h4 class="text-sm font-bold uppercase tracking-wider text-slate-900 mb-3">Listen & Repeat</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        <template x-for="(w, wi) in pt.words" :key="wi">
+                            <div class="rounded-xl border border-slate-200 bg-slate-50 p-3 flex items-center justify-between gap-2">
+                                <div class="min-w-0">
+                                    <div class="font-bold text-slate-900 text-sm sm:text-base" x-text="w[0]"></div>
+                                    <div class="text-xs sm:text-sm text-rose-600 font-medium" x-text="w[1]"></div>
+                                </div>
+                                <div class="flex gap-1.5 shrink-0" x-show="canSpeak">
+                                    <button @click="speak(w[2] || w[0], false)" title="Listen" class="w-9 h-9 rounded-full bg-gradient-to-r text-white text-sm shadow-md hover:opacity-90" :class="pt.grad">&#128266;</button>
+                                    <button @click="speak(w[2] || w[0], true)" title="Listen slowly" class="w-9 h-9 rounded-full bg-white border border-slate-200 text-sm shadow-sm hover:bg-slate-100">&#128034;</button>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-3">Tip: listen, then say the word out loud. Record yourself on your phone and compare.</p>
+                </div>
+
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <h4 class="text-sm font-bold uppercase tracking-wider text-slate-900">Quick Quiz</h4>
+                        <span class="text-xs font-bold px-3 py-1 rounded-full bg-rose-100 text-rose-700" x-text="'Score: ' + pScore(pTopic) + ' / 3'"></span>
+                    </div>
+                    <div class="space-y-4">
+                        <template x-for="(q, qi) in pt.quiz" :key="pTopic + '-' + qi">
+                            <div class="rounded-xl border border-slate-200 p-4">
+                                <p class="text-sm font-semibold text-slate-900 mb-3" x-text="(qi + 1) + '. ' + q.q"></p>
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                    <template x-for="(opt, oi) in q.o" :key="oi">
+                                        <button @click="pickP(qi, oi)" class="p-2.5 rounded-lg border text-left text-xs sm:text-sm font-medium transition-all" :class="pOptClass(qi, oi)" x-text="opt"></button>
+                                    </template>
+                                </div>
+                                <p x-show="pAns[pTopic + '-' + qi] !== undefined" class="mt-3 text-xs text-slate-600" x-text="(pAns[pTopic + '-' + qi] === q.a ? 'Correct! ' : 'Not quite. ') + q.e"></p>
+                            </div>
+                        </template>
+                    </div>
+                    <div x-show="pDone(pTopic)" class="mt-4 text-center text-sm font-semibold" :class="pScore(pTopic) === 3 ? 'text-emerald-600' : 'text-amber-600'"
+                        x-text="pScore(pTopic) === 3 ? 'Perfect score. You have mastered this topic!' : 'Listen to the words again, then try for 3 / 3.'"></div>
+                </div>
+
+                <div class="flex items-center justify-between pt-4 border-t border-slate-100">
+                    <button @click="pTopic = Math.max(0, pTopic - 1)" x-show="pTopic > 0" class="text-xs font-bold px-4 py-2 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200">&larr; Previous</button>
+                    <span x-show="pTopic === 0"></span>
+                    <button @click="retryPhon()" x-show="pDone(pTopic)" class="text-xs font-bold px-4 py-2 rounded-xl bg-amber-100 text-amber-800 hover:bg-amber-200">Retry quiz</button>
+                    <button @click="pTopic = Math.min(phon.length - 1, pTopic + 1)" x-show="pTopic < phon.length - 1" class="text-xs font-bold px-4 py-2 rounded-xl bg-gradient-to-r from-rose-500 to-orange-500 text-white hover:opacity-90">Next topic &rarr;</button>
+                    <button @click="view = 'curriculum'; currentDay = 1; resetAll()" x-show="pTopic === phon.length - 1" class="text-xs font-bold px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:opacity-90">Start Day 1 &rarr;</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-400 mt-auto">
+        30-Day English Mastery Curriculum &bull; Absolute Zero-Redundancy Edition
+    </footer>
+
+    <!-- Question Engine -->
+    <script>
+        /* Question engine: 50 professional scenarios (software, research, e-commerce, classroom)
+           x per-day grammar frames. Scenario forms: subject|base|3sg|past|pp|ing|object.
+           Tokens: {s} subject, {O} object, {0}-{4} verb forms, {T}/{U} rotating context phrases. */
+        const QENGINE = (() => {
+            const BANK = [
+                ["The backend developer|deploy|deploys|deployed|deployed|deploying|the security patch",
+                 "The site reliability engineer|restart|restarts|restarted|restarted|restarting|the failing API gateway",
+                 "The security analyst|rotate|rotates|rotated|rotated|rotating|the expired access certificate",
+                 "The database administrator|migrate|migrates|migrated|migrated|migrating|the customer database",
+                 "The QA engineer|run|runs|ran|run|running|the regression suite",
+                 "The frontend designer|rewrite|rewrites|rewrote|rewritten|rewriting|the checkout component",
+                 "The DevOps lead|write|writes|wrote|written|writing|the deployment script",
+                 "The code reviewer|find|finds|found|found|finding|a memory leak in the scheduler",
+                 "The platform architect|choose|chooses|chose|chosen|choosing|a message queue for the event stream",
+                 "The mobile developer|build|builds|built|built|building|the offline mode",
+                 "The systems engineer|monitor|monitors|monitored|monitored|monitoring|the server latency dashboard",
+                 "The data engineer|clean|cleans|cleaned|cleaned|cleaning|the duplicated dataset",
+                 "The release manager|freeze|freezes|froze|frozen|freezing|the main branch"],
+                ["The lead researcher|conduct|conducts|conducted|conducted|conducting|a survey of rural clinics",
+                 "The doctoral candidate|defend|defends|defended|defended|defending|a dissertation on language acquisition",
+                 "The lab technician|calibrate|calibrates|calibrated|calibrated|calibrating|the spectrometer",
+                 "The statistician|test|tests|tested|tested|testing|the null hypothesis",
+                 "The journal editor|reject|rejects|rejected|rejected|rejecting|the weak manuscript",
+                 "The postdoctoral fellow|publish|publishes|published|published|publishing|a paper on soil microbiology",
+                 "The research supervisor|review|reviews|reviewed|reviewed|reviewing|the ethics proposal",
+                 "The peer reviewer|question|questions|questioned|questioned|questioning|the sampling method",
+                 "The graduate student|transcribe|transcribes|transcribed|transcribed|transcribing|the recorded interview",
+                 "The principal investigator|submit|submits|submitted|submitted|submitting|the grant application",
+                 "The data analyst|draw|draws|drew|drawn|drawing|a regression curve",
+                 "The librarian|catalog|catalogs|cataloged|cataloged|cataloging|the conference archive",
+                 "The visiting professor|present|presents|presented|presented|presenting|the preliminary report"],
+                ["The warehouse supervisor|scan|scans|scanned|scanned|scanning|the outbound pallet",
+                 "The logistics coordinator|reroute|reroutes|rerouted|rerouted|rerouting|the delayed shipment",
+                 "The fulfillment manager|pack|packs|packed|packed|packing|the priority order",
+                 "The customer support agent|refund|refunds|refunded|refunded|refunding|the damaged item",
+                 "The inventory analyst|count|counts|counted|counted|counting|the seasonal stock",
+                 "The marketplace seller|ship|ships|shipped|shipped|shipping|the handmade lamp",
+                 "The procurement officer|negotiate|negotiates|negotiated|negotiated|negotiating|the freight contract",
+                 "The delivery dispatcher|assign|assigns|assigned|assigned|assigning|the evening route",
+                 "The category manager|update|updates|updated|updated|updating|the holiday catalog",
+                 "The returns specialist|inspect|inspects|inspected|inspected|inspecting|the returned parcel",
+                 "The payments analyst|reconcile|reconciles|reconciled|reconciled|reconciling|the daily ledger",
+                 "The customs broker|clear|clears|cleared|cleared|clearing|the imported cargo"],
+                ["The senior instructor|grade|grades|graded|graded|grading|the midterm essay",
+                 "The classroom teacher|rearrange|rearranges|rearranged|rearranged|rearranging|the seating plan",
+                 "The curriculum coordinator|revise|revises|revised|revised|revising|the reading list",
+                 "The science teacher|demonstrate|demonstrates|demonstrated|demonstrated|demonstrating|the titration experiment",
+                 "The school counselor|meet|meets|met|met|meeting|the new student",
+                 "The teaching assistant|prepare|prepares|prepared|prepared|preparing|the vocabulary handout",
+                 "The language tutor|correct|corrects|corrected|corrected|correcting|the pronunciation drill",
+                 "The department head|observe|observes|observed|observed|observing|the trial lesson",
+                 "The kindergarten teacher|teach|teaches|taught|taught|teaching|the alphabet",
+                 "The exam invigilator|distribute|distributes|distributed|distributed|distributing|the answer booklet",
+                 "The music instructor|conduct|conducts|conducted|conducted|conducting|the choir rehearsal",
+                 "The principal|announce|announces|announced|announced|announcing|the new timetable"]
+            ];
+            const SC = [];
+            for (let k = 0; k < 13; k++) BANK.forEach(d => { if (d[k]) SC.push(d[k].split("|")); });
+
+            const TM = "8:15 a.m.|9:30 a.m.|11:00 a.m.|1:45 p.m.|3:20 p.m.|4:50 p.m.";
+            // Each day: t/u = rotating context phrases, q = frames [stem, correct, wrong, wrong, wrong]
+            const D = {
+                1: { t: "Right now|At this very moment|Currently|At the moment", u: "Every Monday|Each week|Every morning|On most days", q: [
+                    ["{T}, {s} _____ {O}.", "is {4}", "{1}", "{2}", "has {3}"],
+                    ["{U}, {s} _____ {O}.", "{1}", "is {4}", "{2}", "will {0}"],
+                    ["{s} rarely _____ {O} on weekends.", "{1}", "is {4}", "{2}", "has {3}"],
+                    ["Please stay quiet, because {s} _____ {O} right now.", "is {4}", "{1}", "{2}", "has {3}"]] },
+                2: { t: "Yesterday afternoon|Last Friday|Two weeks ago|On Monday morning|Last night|In March", q: [
+                    ["{T}, {s} _____ {O}.", "{2}", "{1}", "is {4}", "has {3}"],
+                    ["{s} _____ {O} shortly after the meeting ended.", "{2}", "will {0}", "{4}", "has {3}"],
+                    ["{s} _____ {O} and then went home.", "{2}", "{1}", "has {3}", "will {0}"],
+                    ["Did {s} actually _____ {O} last week?", "{0}", "{2}", "{1}", "{4}"]] },
+                3: { t: "All morning long|Throughout the afternoon|All through the evening|For most of last night", u: "At nine o'clock|At noon|At closing time|Around midnight|Just before lunch", q: [
+                    ["While {s} _____ {O}, the power suddenly failed.", "was {4}", "{1}", "is {4}", "will {0}"],
+                    ["{U}, {s} _____ {O} when the manager walked in.", "was {4}", "{1}", "will be {4}", "has {3}"],
+                    ["{T}, {s} _____ {O} while the rest of the team worked elsewhere.", "was {4}", "{1}", "has {3}", "will be {4}"]] },
+                4: { t: TM, q: [
+                    ["According to the published rota, {s} _____ {O} at {T} tomorrow.", "{1}", "{2}", "has {3}", "{4}"],
+                    ["The official calendar states that {s} _____ {O} on Friday at {T}.", "{1}", "{2}", "will have {3}", "{4}"],
+                    ["The itinerary shows that {s} _____ {O} next Tuesday, starting at {T}.", "{1}", "{2}", "has {3}", "{4}"],
+                    ["I have set the diary: {s} and I _____ {O} together at {T} tomorrow.", "are {4}", "{2}", "have {3}", "was {4}"]] },
+                5: { q: [
+                    ["The alarm has just sounded, so I _____ phone {s} about {O} immediately.", "will", "am going to", "have", "would"],
+                    ["Look at those dark clouds over the yard; it _____ rain before {s} starts work on {O}.", "is going to", "will", "would", "shall"],
+                    ["{s} has already booked the room, so the discussion of {O} _____ take place next Wednesday.", "is going to", "will", "would", "did"],
+                    ["The phone is ringing and nobody else is free, so I _____ answer it and ask about {O}.", "will", "am going to", "have", "would"]] },
+                6: { t: "Friday evening|the end of this month|the close of business|next Monday morning|the end of the semester", u: "9 a.m.|2 p.m.|4:30 p.m.|noon", q: [
+                    ["This time tomorrow, {s} _____ {O}.", "will be {4}", "will have {3}", "{2}", "has {3}"],
+                    ["By {T}, {s} _____ {O}.", "will have {3}", "will be {4}", "{2}", "{1}"],
+                    ["At {U} on Thursday, {s} _____ {O} in front of the whole department.", "will be {4}", "will have {3}", "{2}", "has {3}"]] },
+                7: { q: [
+                    ["Although {s} normally _____ {O} alone, this week the whole team is helping.", "{1}", "is {4}", "{2}", "has {3}"],
+                    ["{s} _____ {O} when the fire alarm sounded.", "was {4}", "{1}", "will {0}", "has {3}"],
+                    ["By the time the weekend begins, {s} _____ {O}.", "will have {3}", "will be {4}", "{2}", "{1}"],
+                    ["{s} _____ {O} at this very moment, so please wait outside.", "is {4}", "{1}", "{2}", "has {3}"],
+                    ["Last quarter, {s} _____ {O} twice.", "{2}", "{1}", "is {4}", "will {0}"]] },
+                8: { t: "Over the past five years|In recent months|Over the last decade|Since the project began", q: [
+                    ["{s} _____ {O} several times so far, so the process is familiar.", "has {3}", "{2}", "is {4}", "will {0}"],
+                    ["{T}, {s} _____ {O} more than once.", "has {3}", "{2}", "was {4}", "will {0}"],
+                    ["I have just heard the news: {s} _____ {O}!", "has {3}", "was {4}", "will {0}", "had {3}"]] },
+                9: { q: [
+                    ["{s} has _____ {3} {O}, so you may proceed with the next step.", "already", "ever", "yet", "soon"],
+                    ["{s} hasn't {3} {O} _____, so we are still waiting.", "yet", "already", "just", "soon"],
+                    ["{s} has _____ {3} {O}; it was finished only a moment ago.", "just", "yet", "ever", "never"],
+                    ["{s} has _____ {3} {O} in all these years, which is a remarkable record.", "never", "yet", "just", "already"]] },
+                10: { t: "since early morning|for three hours|since Monday|for the whole week|since the audit began", q: [
+                    ["{s} _____ {O} {T}.", "has been {4}", "is {4}", "{2}", "{1}"],
+                    ["How long has {s} been _____ {O}?", "{4}", "{1}", "{0}", "to {0}"],
+                    ["Everyone is waiting because {s} _____ {O} for hours and still has no result.", "has been {4}", "is {4}", "{2}", "will be {4}"]] },
+                11: { t: "2019|Monday morning|last September|the autumn term|the merger", u: "three weeks|ten years|several hours|eighteen months|a long time", q: [
+                    ["{s} has been working on {O} _____ {T}.", "since", "for", "from", "during"],
+                    ["{s} has been working on {O} _____ {U}.", "for", "since", "from", "during"],
+                    ["It has been _____ {T} that {s} last touched {O}.", "since", "for", "at", "in"],
+                    ["It has been _____ {U} since {s} last touched {O}.", "for", "since", "at", "from"]] },
+                12: { t: "Last Tuesday|In 2021|Three days ago|At the start of the term|Yesterday morning", u: "June|2020|early spring|the previous term", q: [
+                    ["{T}, {s} _____ {O}.", "{2}", "has {3}", "is {4}", "{1}"],
+                    ["{s} _____ {O} so far this week.", "has {3}", "{2}", "was {4}", "{1}"],
+                    ["Already today, {s} _____ {O} twice.", "has {3}", "{2}", "was {4}", "will {0}"],
+                    ["{s} _____ {O} when the project started in {U}.", "{2}", "has {3}", "is {4}", "{1}"],
+                    ["This month, {s} _____ {O} more often than anyone expected.", "has {3}", "{2}", "was {4}", "will have {3}"]] },
+                13: { q: [
+                    ["By the time the auditors arrived, {s} _____ {O}.", "had {3}", "has {3}", "will have {3}", "was {4}"],
+                    ["When the call from head office came, {s} _____ {O} already.", "had {3}", "has {3}", "will have {3}", "is {4}"],
+                    ["Only after {s} _____ {O} did the supervisor allow anyone to leave.", "had {3}", "has {3}", "will {0}", "is {4}"],
+                    ["{s} _____ {O} for hours before the system finally crashed.", "had been {4}", "has been {4}", "is {4}", "will be {4}"]] },
+                14: { q: [
+                    ["{s} _____ {O} for years before moving to the new department.", "had been {4}", "has been {4}", "is {4}", "{1}"],
+                    ["Last Tuesday, {s} _____ {O}, and the results are still on the shared drive.", "{2}", "has {3}", "is {4}", "{1}"],
+                    ["{s} _____ {O} three times since January.", "has {3}", "{2}", "had {3}", "was {4}"],
+                    ["The meeting had already ended when {s} finally _____ {O}.", "{2}", "has {3}", "is {4}", "will {0}"],
+                    ["{s} _____ {O} since early morning, and the results should be ready soon.", "has been {4}", "had been {4}", "{2}", "{1}"]] },
+                15: { q: [
+                    ["Thanks to the new training, {s} _____ {O} without any help.", "can {0}", "can to {0}", "can {4}", "can {1}"],
+                    ["Back in 2015, {s} _____ {O} only with close supervision.", "could {0}", "can {0}", "could to {0}", "will can {0}"],
+                    ["Next quarter, {s} _____ {O} independently.", "will be able to {0}", "will can {0}", "can to {0}", "will be able {0}"],
+                    ["So far this month, {s} _____ {O} every single day.", "has been able to {0}", "has could {0}", "has been able {0}", "has can {0}"]] },
+                16: { q: [
+                    ["The lights are still on in the office, so {s} _____ still be working on {O}.", "must", "can't", "mustn't", "needn't"],
+                    ["An email says {s} left for a holiday abroad yesterday, so that person _____ be working on {O} today.", "can't", "must", "needn't", "shouldn't"],
+                    ["I am not sure; {s} _____ be handling {O}, but nobody has confirmed it.", "might", "must", "can't", "mustn't"],
+                    ["The signature on the form belongs to {s}, so that person _____ have approved {O}.", "must", "can't", "needn't", "shouldn't"]] },
+                17: { q: [
+                    ["Under the new regulations, {s} _____ {O} personally.", "has to {0}", "have to {0}", "has {0}", "musts {0}"],
+                    ["Honestly, I think {s} _____ {O} soon; it would be wise.", "should {0}", "should to {0}", "shoulds {0}", "should {2}"],
+                    ["The law states that {s} _____ {O}, so there is no choice.", "must {0}", "must to {0}", "musts {0}", "must {4}"],
+                    ["Last month, {s} _____ {O} because the regulator required it.", "had to {0}", "must {0}", "have to {0}", "had {0}"]] },
+                18: { q: [
+                    ["{s} _____ {O} before the safety review is complete; it is strictly forbidden.", "must not {0}", "does not have to {0}", "should {0}", "has to {0}"],
+                    ["{s} _____ {O} this weekend; the deadline has been postponed, so it is optional.", "does not have to {0}", "must not {0}", "has to {0}", "can't {0}"],
+                    ["{s} _____ {O} by hand any more because the system now does it automatically.", "does not have to {0}", "must not {0}", "has to {0}", "cannot to {0}"],
+                    ["According to the rules, {s} _____ {O}; doing so would breach the contract.", "must not {0}", "does not have to {0}", "needs to {0}", "may {0}"]] },
+                19: { q: [
+                    ["{O} _____ by {s} yesterday.", "was {3}", "is {3}", "was {4}", "had {3}"],
+                    ["{O} _____ by {s} every week.", "is {3}", "was {3}", "is {4}", "has {3}"],
+                    ["{O} _____ by {s} at the moment.", "is being {3}", "is {3}", "was {3}", "has {3}"],
+                    ["Soon, {O} _____ by {s}.", "will be {3}", "will {3}", "would {3}", "is {4}"],
+                    ["Since the new policy began, {O} _____ by {s} twice.", "has been {3}", "have been {3}", "was {3}", "is {4}"]] },
+                20: { q: [
+                    ["On Monday, the director said that {s} _____ {O} the next day.", "would {0}", "will {0}", "{1}", "has {3}"],
+                    ["The manager said that {s} _____ {O} at that moment.", "was {4}", "is {4}", "will be {4}", "has been {4}"],
+                    ["The director said that {s} _____ {O} the previous day.", "had {3}", "has {3}", "will {0}", "is {4}"],
+                    ["The auditor asked whether {s} _____ {O} every month.", "{2}", "{1}", "will {0}", "has {3}"]] },
+                21: { q: [
+                    ["Excuse me, _____ you please tell me when {s} will handle {O}?", "could", "must", "shall", "had"],
+                    ["{O} _____ by {s} before the deadline, so nobody else should touch it.", "must be {3}", "must {3}", "must be {4}", "must to be {3}"],
+                    ["The coordinator told us that {s} _____ {O} on the previous Friday.", "had {3}", "has {3}", "will {0}", "is {4}"],
+                    ["You _____ stay late tonight because {s} has already handled {O}.", "don't have to", "mustn't", "have to", "ought to"]] },
+                22: { q: [
+                    ["If {s} _____ {O} today, the client will approve the next phase.", "{1}", "will {0}", "would {0}", "{2}"],
+                    ["We will meet the deadline if {s} _____ {O} tomorrow.", "{1}", "will {0}", "would {0}", "has {3}"],
+                    ["If I were in charge, {s} _____ {O} in half the time.", "would {0}", "will {0}", "{1}", "had {3}"],
+                    ["If {s} _____ {O} more carefully, fewer errors would appear.", "{2}", "{1}", "will {0}", "would {0}"],
+                    ["Unless {s} _____ {O} soon, the client will cancel the contract.", "{1}", "does not {0}", "will {0}", "{2}"]] },
+                23: { q: [
+                    ["If {s} _____ {O} earlier, the delay would never have happened.", "had {3}", "has {3}", "would have {3}", "{2}"],
+                    ["If {s} had {3} {O} on time, the client _____ happier today.", "would be", "would have been", "will be", "had been"],
+                    ["{s} _____ {O} on schedule if the budget had been approved earlier.", "would have {3}", "would {0}", "had {3}", "will have {3}"],
+                    ["Had {s} {3} {O} sooner, the outage _____ prevented.", "would have been", "will be", "had been", "is"]] },
+                24: { q: [
+                    ["{s}, _____ {2} {O}, received a commendation.", "who", "which", "whose", "whom"],
+                    ["{s}, _____ team was praised last month, now works on {O}.", "whose", "who", "which", "whom"],
+                    ["{s} is the person _____ first spotted the problem with {O}.", "who", "whose", "which", "whom"],
+                    ["{O} is the matter about _____ {s} spoke at the conference.", "which", "who", "whose", "where"],
+                    ["The conference room _____ {s} presented {O} was fully booked.", "where", "who", "whose", "whom"]] },
+                25: { q: [
+                    ["{s} presented _____ interesting proposal about {O}.", "an", "a", "the", "(no article)"],
+                    ["{s} spent hours looking for _____ best way to handle {O}.", "the", "a", "an", "(no article)"],
+                    ["{s} waited for _____ hour before starting work on {O}.", "an", "a", "the", "(no article)"],
+                    ["{s} proposed _____ unique solution for {O}.", "a", "an", "the", "(no article)"],
+                    ["{s} believes that _____ patience is essential when working on {O}.", "(no article)", "a", "an", "the"]] },
+                26: { q: [
+                    ["{s} completed {O} significantly _____ than last time.", "faster", "fastest", "more fast", "most fast"],
+                    ["{s} says {O} was far _____ than anyone predicted.", "more demanding", "most demanding", "demandinger", "much demanding"],
+                    ["Of all the tasks this term, {O} was by far _____ for {s}.", "the most rewarding", "more rewarding", "most rewarding", "the more rewarding"],
+                    ["{s} is not _____ experienced as the colleague who also worked on {O}.", "as", "more", "than", "the most"],
+                    ["The more carefully {s} worked on {O}, _____ the final result became.", "the better", "better", "the best", "more good"]] },
+                27: { q: [
+                    ["{s} will _____ the cause of the delay before Friday.", "look into", "look after", "look up to", "look out"],
+                    ["Because of the power cut, {s} had to _____ the planned work on {O} until Monday.", "put off", "put out", "put up", "put on"],
+                    ["{s} could not _____ why the work on {O} kept stalling.", "figure out", "figure in", "figure up", "figure over"],
+                    ["The committee asked {s} to _____ a detailed report on {O}.", "draw up", "draw out", "draw in", "draw down"],
+                    ["{s} had to _____ the old plan when the work on {O} proved too costly.", "give up", "give in", "give out", "give off"]] },
+                28: { q: [
+                    ["{s} will start work on {O} _____ Monday _____ 10:00 a.m.", "on / at", "at / on", "in / at", "on / in"],
+                    ["{s} must finish the work on {O} _____ Friday so the client can review it _____ the weekend.", "by / over", "until / over", "by / in", "at / over"],
+                    ["{s} will stay at the office _____ the review of {O} is finished.", "until", "by", "at", "on"],
+                    ["{s} started working on {O} _____ the spring of 2021.", "in", "on", "at", "by"],
+                    ["{s} will wait for the delivery _____ the warehouse door _____ noon.", "at / until", "on / until", "in / since", "at / in"]] },
+                29: { q: [
+                    ["_____ {s} lacked extra staff, the work on {O} was finished on schedule.", "Although", "Despite", "Because", "Unless"],
+                    ["_____ the shortage of staff, the work on {O} was finished on schedule.", "In spite of", "Even though", "Because of", "Whereas"],
+                    ["{s} reviewed the plan twice; _____, the work on {O} still contained errors.", "nevertheless", "consequently", "because", "so that"],
+                    ["{s} skipped the final check; _____, the work on {O} contained several errors.", "consequently", "however", "despite", "although"],
+                    ["The work on {O} was demanding, _____ {s} remained calm throughout.", "yet", "unless", "moreover", "hence"]] },
+                30: { q: [
+                    ["Had {s} _____ {O} earlier, the outage would have been avoided.", "{3}", "{1}", "{4}", "would {0}"],
+                    ["Hardly _____ {s} started work on {O} when the next request arrived.", "had", "has", "did", "was"],
+                    ["Not only _____ {s} finish {O}, but the team also trained the new staff.", "did", "does", "was", "had"],
+                    ["Seldom _____ {s} work on {O} without consulting the team.", "does", "do", "is", "has"],
+                    ["By the time the committee meets, {s} _____ {O} for six months.", "will have been {4}", "will be {4}", "has been {4}", "had been {4}"]] }
+            };
+
+            const fill = (t, r, T, U) => t.replace(/\{(\w)\}/g, (m, k) =>
+                k === "s" ? r[0][0].toLowerCase() + r[0].slice(1) : k === "O" ? r[6] : k === "T" ? T : k === "U" ? U : r[+k + 1]);
+            const pick = (str, n) => { const a = (str || "").split("|"); return a[n % a.length]; };
+            const cache = {};
+
+            const build = day => {
+                const d = D[day], out = [];
+                for (let i = 0; i < 50; i++) {
+                    const it = d.q[i % d.q.length], r = SC[(i + day * 7) % 50];
+                    const T = pick(d.t, i + day), U = pick(d.u, i + day * 3);
+                    const f = x => fill(x, r, T, U);
+                    const p = f(it[0]);
+                    const opts = [f(it[1]), f(it[2]), f(it[3]), f(it[4])];
+                    const shift = (i + day) % 4, shuffled = [];
+                    for (let k = 0; k < 4; k++) shuffled.push(opts[(k + shift) % 4]);
+                    out.push({ p: p[0].toUpperCase() + p.slice(1), o: shuffled, c: opts[0] });
+                }
+                return out;
+            };
+            const esc = x => x.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            // Worked examples: same frames, but only subject/frame pairings the test never uses
+            const examples = (day, n) => {
+                const d = D[day], out = [], used = new Set();
+                for (let k = 0; k < n; k++) {
+                    const j = k % d.q.length, it = d.q[j];
+                    let s = (k * 5 + day * 3) % 50;
+                    while (used.has(s) || ((((s - day * 7) % 50) + 50) % 50) % d.q.length === j) s = (s + 1) % 50;
+                    used.add(s);
+                    const r = SC[s], T = pick(d.t, k + day + 11), U = pick(d.u, k + day * 3 + 5);
+                    const f = x => fill(x, r, T, U);
+                    let p = f(it[0]); p = p[0].toUpperCase() + p.slice(1);
+                    const parts = f(it[1]).split(" / "); let c = 0;
+                    out.push(esc(p).replace(/_____/g, () => {
+                        const a = parts[c++] || ""; return "<strong class=\"text-emerald-700\">" + (a === "(no article)" ? "\u2205" : esc(a)) + "</strong>";
+                    }));
+                }
+                return out;
+            };
+            const drill = (day, n) => {
+                const d = D[day], out = [], used = new Set();
+                for (let k = 0; k < n; k++) {
+                    const j = (k + 1) % d.q.length, it = d.q[j];
+                    let s = (k * 5 + day * 3 + 2) % 50;
+                    while (used.has(s) || ((((s - day * 7) % 50) + 50) % 50) % d.q.length === j) s = (s + 1) % 50;
+                    used.add(s);
+                    const r = SC[s], T = pick(d.t, k + day + 3), U = pick(d.u, k + day * 3 + 9);
+                    const f = x => fill(x, r, T, U), p = f(it[0]), opts = [f(it[1]), f(it[2]), f(it[3]), f(it[4])];
+                    const sh = (k + day) % 4, o = [];
+                    for (let m = 0; m < 4; m++) o.push(opts[(m + sh) % 4]);
+                    out.push({ p: p[0].toUpperCase() + p.slice(1), o, c: opts[0] });
+                }
+                return out;
+            };
+            return { get: day => cache[day] || (cache[day] = build(day)), examples, drill, esc };
+        })();
+    </script>
+
+    <!-- App Data & Logic -->
+    <script>
+        /* ===== BILLING CONFIG =====
+           1. In Stripe Dashboard > Payment Links, create one link per plan.
+           2. Paste each URL into `link` below.
+           3. For each link set "After payment" > redirect to: https://YOUR-SITE/index.html?subscribed=1
+           4. Set demoUnlock to false before going live. */
+        const BILLING = {
+            freeDays: 7,
+            demoUnlock: true,
+            plans: [
+                { id: 'monthly', name: 'Monthly', price: '$9', per: '/month', note: '', link: '' },
+                { id: 'yearly', name: 'Yearly', price: '$59', per: '/year', note: 'Best value: save 45%', link: '' }
+            ]
+        };
+
+        function appData() {
+            return {
+                currentDay: 1,
+                testActive: false,
+                testSubmitted: false,
+                currentBlock: 1,
+                userAnswers: {},
+                finalScore: 0,
+                streak: JSON.parse(localStorage.getItem('english_streak_v1') || '{"last":"","count":0,"best":0,"dates":[]}'),
+                skillStats: JSON.parse(localStorage.getItem('english_skill_stats_v1') || '{}'),
+                missed: [],
+                billing: BILLING,
+                selectedPlan: 'yearly',
+                subscribed: localStorage.getItem('english_sub_v1') === '1',
+                drillActive: false, drillQs: [], drillIdx: 0, drillPick: null, drillScore: 0, drillDone: false,
+                completedDays: JSON.parse(localStorage.getItem('english_completed_days_absolute_v14') || '[]'),
+                
+                get completedCount() {
+                    return this.completedDays.length;
+                },
+
+                get answeredCount() {
+                    return Object.keys(this.userAnswers).length;
+                },
+
+                view: 'curriculum',
+                basicTopic: 0,
+                bAns: {},
+                bBest: JSON.parse(localStorage.getItem('english_basics_v1') || '{}'),
+
+                basics: [
+                    { id: 'sp', icon: '🧩', title: 'Subject & Predicate', grad: 'from-sky-500 to-pink-500',
+                      intro: "Every complete sentence has two parts: a subject (who or what the sentence is about) and a predicate (what the subject does or is).",
+                      points: ["The subject is usually a noun or pronoun, plus the words that describe it.", "The predicate always contains a verb and tells what the subject does, has, or is.", "Quick test: find the verb first, then ask 'who or what?' before it to find the subject.", "A sentence needs both parts. 'Deployed the patch.' has no subject, so it is only a fragment."],
+                      examples: ["[[The backend developer]] {{deployed the security patch}}.", "[[Our research team]] {{is collecting survey data}}.", "[[The warehouse supervisor and the driver]] {{scan every parcel}}.", "[[She]] {{teaches English at a local school}}."],
+                      quiz: [
+                        { q: "In 'The lab technician calibrated the machine', what is the subject?", o: ["The lab technician", "calibrated", "the machine"], a: 0, e: "Ask who calibrated: the lab technician." },
+                        { q: "What is the predicate in 'Our students submit reports every Friday'?", o: ["Our students", "submit reports every Friday", "every Friday"], a: 1, e: "The predicate starts at the verb and tells what the students do." },
+                        { q: "Which one is a complete sentence?", o: ["Updated the website last night.", "The website updated last night.", "The website last night."], a: 1, e: "It has a subject (the website) and a predicate (updated last night)." }] },
+                    { id: 'noun', icon: '🏷️', title: 'Nouns', grad: 'from-emerald-500 to-teal-500',
+                      intro: "A noun names a person, place, thing, or idea.",
+                      points: ["Common nouns are general (teacher, city, laptop). Proper nouns name something specific and start with a capital letter (Maria, Manila, Python).", "Countable nouns can be counted (one report, two reports). Uncountable nouns cannot (information, advice, software).", "Abstract nouns name ideas you cannot touch: honesty, quality, freedom.", "A noun is often the subject or the object of a sentence."],
+                      examples: ["The **engineer** opened the **laptop** in the **office**.", "**Maria** works in **Manila** as a data analyst.", "Good **communication** improves **teamwork**.", "The customer asked for **advice** about the **delivery**."],
+                      quiz: [
+                        { q: "Which word is a proper noun?", o: ["teacher", "Manila", "city"], a: 1, e: "Manila names one specific place, so it starts with a capital letter." },
+                        { q: "Which noun is uncountable?", o: ["report", "laptop", "information"], a: 2, e: "We say 'some information', never 'an information'." },
+                        { q: "Pick the abstract noun: 'Her honesty impressed the manager.'", o: ["honesty", "manager", "impressed"], a: 0, e: "Honesty is an idea, not something you can touch." }] },
+                    { id: 'pron', icon: '👤', title: 'Pronouns', grad: 'from-violet-500 to-fuchsia-500',
+                      intro: "A pronoun takes the place of a noun so you do not have to repeat it.",
+                      points: ["Subject pronouns: I, you, he, she, it, we, they. They usually come before the verb.", "Object pronouns: me, you, him, her, it, us, them. They come after a verb or a preposition.", "Possessive words show ownership: my, your, his, her, its, our, their.", "Make sure each pronoun clearly points to one noun."],
+                      examples: ["The teacher said **she** would grade the essays tonight.", "The manager thanked **us** for finishing early.", "The developers fixed the bug, and **they** deployed it.", "**Our** team shared **its** results with **them**."],
+                      quiz: [
+                        { q: "Choose the correct pronoun: 'The auditor called ___ yesterday.'", o: ["I", "me", "my"], a: 1, e: "After a verb we use the object pronoun: me." },
+                        { q: "Which word is a possessive? 'They finished their report.'", o: ["They", "their", "finished"], a: 1, e: "Their shows who owns the report." },
+                        { q: "Replace the noun: 'The students asked questions.' becomes '___ asked questions.'", o: ["Them", "They", "Their"], a: 1, e: "A pronoun that acts as the subject must be a subject pronoun: they." }] },
+                    { id: 'verb', icon: '⚡', title: 'Verbs', grad: 'from-rose-500 to-orange-500',
+                      intro: "A verb shows an action or a state of being. Every sentence needs one.",
+                      points: ["Action verbs show what someone does: write, run, deploy, teach.", "Linking verbs (be, seem, become, feel) connect the subject to a description.", "Helping verbs (is, have, will, can) join the main verb to show time or ability.", "Verbs change form for tense and agreement: she works, they work, he worked."],
+                      examples: ["The analyst **writes** a report every week.", "The system **is** stable.", "The team **will launch** the app on Monday.", "She **has finished** the survey."],
+                      quiz: [
+                        { q: "Which word is the verb? 'The teacher explains the rule clearly.'", o: ["teacher", "explains", "clearly"], a: 1, e: "Explains is the action in the sentence." },
+                        { q: "Which verb links the subject to a description? 'The server seems slow.'", o: ["server", "seems", "slow"], a: 1, e: "Seems connects the server to the word slow." },
+                        { q: "Choose the correct verb: 'She ___ in the research lab.'", o: ["work", "works", "working"], a: 1, e: "With she, a present-tense verb takes -s." }] },
+                    { id: 'adj', icon: '🎨', title: 'Adjectives & Articles', grad: 'from-amber-500 to-yellow-500',
+                      intro: "An adjective describes a noun or pronoun. It makes your meaning more exact.",
+                      points: ["Adjectives answer: what kind? which one? how many?", "They usually come before the noun (a fast server) or after be (the server is fast).", "Articles are small adjectives: a and an mean any one; the means a specific one.", "Use an before a vowel sound: an engineer, an hour."],
+                      examples: ["The **new** manager approved the **detailed** plan.", "We bought **three** **reliable** scanners.", "**An** engineer fixed **the** broken gateway.", "The report is **accurate**."],
+                      quiz: [
+                        { q: "Which word is an adjective? 'The fast server crashed.'", o: ["fast", "server", "crashed"], a: 0, e: "Fast describes the server." },
+                        { q: "Which article goes before 'engineer' when you mention one for the first time?", o: ["a", "an", "the"], a: 1, e: "Engineer starts with a vowel sound, so we use an." },
+                        { q: "What does an adjective do?", o: ["Describes a noun", "Shows an action", "Joins two sentences"], a: 0, e: "Adjectives add detail about nouns and pronouns." }] },
+                    { id: 'adv', icon: '🚀', title: 'Adverbs', grad: 'from-cyan-500 to-blue-500',
+                      intro: "An adverb tells how, when, where, or how much about a verb, an adjective, or another adverb.",
+                      points: ["Many end in -ly: quickly, carefully, finally.", "Not all do: soon, here, very, often, well.", "They answer: how? when? where? how often?", "Good is an adjective; well is an adverb: she writes well."],
+                      examples: ["The developer **carefully** reviewed the code.", "The package arrived **yesterday**.", "She is **very** organized.", "Our students **often** practice **outside**."],
+                      quiz: [
+                        { q: "Which word is an adverb? 'The team worked quickly.'", o: ["team", "worked", "quickly"], a: 2, e: "Quickly tells how the team worked." },
+                        { q: "Choose the correct word: 'He explains the rule ___.'", o: ["good", "well", "goodly"], a: 1, e: "We need an adverb to describe the verb explains." },
+                        { q: "In 'very reliable', what does 'very' describe?", o: ["a verb", "an adjective", "a noun"], a: 1, e: "Very makes the adjective reliable stronger." }] },
+                    { id: 'prep', icon: '📍', title: 'Prepositions', grad: 'from-indigo-500 to-purple-500',
+                      intro: "A preposition shows how a noun or pronoun relates to another word: place, time, or direction.",
+                      points: ["Place: in the lab, on the desk, at the warehouse.", "Time: at 9 a.m., on Monday, in July, before noon.", "Direction: to the office, from the port, into the system.", "A preposition is followed by a noun or pronoun: with the team, for her."],
+                      examples: ["The meeting is **on** Friday **at** 10 a.m.", "The parcel went **from** the warehouse **to** the customer.", "She placed the book **on** the desk **in** the classroom.", "We worked **with** them **during** the audit."],
+                      quiz: [
+                        { q: "Choose the correct preposition: 'The class starts ___ 8 a.m.'", o: ["on", "at", "in"], a: 1, e: "Use at for exact clock times." },
+                        { q: "Which word is a preposition? 'The file is inside the folder.'", o: ["file", "inside", "folder"], a: 1, e: "Inside shows where the file is." },
+                        { q: "Choose the correct preposition: 'We have a deadline ___ Friday.'", o: ["on", "at", "in"], a: 0, e: "Use on for days of the week." }] },
+                    { id: 'conj', icon: '🔗', title: 'Conjunctions', grad: 'from-teal-500 to-green-500',
+                      intro: "A conjunction joins words, phrases, or sentences.",
+                      points: ["Coordinating conjunctions (for, and, nor, but, or, yet, so) join equal parts.", "Subordinating conjunctions (because, although, if, when, while) start a dependent clause.", "Put a comma before a coordinating conjunction that joins two full sentences.", "A clause starting with because or although cannot stand alone: 'Because the server crashed.' is incomplete."],
+                      examples: ["The team tested the app **and** fixed two bugs.", "The report was late, **but** the client stayed calm.", "**Although** it rained, the delivery arrived on time.", "We will start **when** the supervisor arrives."],
+                      quiz: [
+                        { q: "Which word is a coordinating conjunction? 'She wrote the code, and he tested it.'", o: ["wrote", "and", "tested"], a: 1, e: "And joins two equal sentences." },
+                        { q: "Choose the best word: 'I will call you ___ I finish the report.'", o: ["when", "but", "or"], a: 0, e: "When links the two actions in time." },
+                        { q: "Which one is a complete sentence?", o: ["Because the server crashed.", "The server crashed, so we restarted it.", "Although we restarted it."], a: 1, e: "The other two are dependent clauses that need a main clause." }] },
+                    { id: 'interj', icon: '💥', title: 'Interjections', grad: 'from-lime-500 to-emerald-500',
+                      intro: "An interjection is a short word that shows sudden emotion.",
+                      points: ["Examples: wow, oops, hey, ouch, hurray.", "They usually stand apart and are followed by ! or a comma.", "They are common in speech and informal writing. Avoid them in formal reports.", "They do not change the grammar of the rest of the sentence."],
+                      examples: ["**Wow**, the app loads fast!", "**Oops**, I sent the wrong file.", "**Hurray**! We passed the audit.", "**Hey**, can you check this report?"],
+                      quiz: [
+                        { q: "Which word is an interjection? 'Wow, the results are great!'", o: ["Wow", "results", "great"], a: 0, e: "Wow expresses sudden surprise." },
+                        { q: "When should you avoid interjections?", o: ["In formal reports", "In casual talk", "In messages to friends"], a: 0, e: "Formal writing uses a more neutral tone." },
+                        { q: "What does an interjection show?", o: ["Time", "Sudden emotion", "Place"], a: 1, e: "Interjections express feelings such as surprise or joy." }] }
+                ],
+
+                pTopic: 0,
+                pAns: {},
+                pBest: JSON.parse(localStorage.getItem('english_phon_v1') || '{}'),
+
+                phon: [
+                    { id: 'ipa', icon: '🔤', title: 'Sounds & the IPA', grad: 'from-rose-500 to-orange-500',
+                      intro: "English spelling does not always show how a word sounds. The International Phonetic Alphabet (IPA) gives one symbol for each sound, so you can read any pronunciation exactly.",
+                      points: ["English has about 44 sounds, but only 26 letters. That is why spelling can mislead you.", "Slashes mark IPA: /kæt/ is the sound of cat. Count sounds, not letters: ship /ʃɪp/ has 4 letters but 3 sounds.", "The mark ˈ comes before the stressed syllable: engineer /ˌendʒɪˈnɪr/.", "Use a dictionary with audio and IPA whenever you learn a new word."],
+                      words: [["cat", "/kæt/"], ["sit", "/sɪt/"], ["ship", "/ʃɪp/"], ["think", "/θɪŋk/"], ["engineer", "/ˌendʒɪˈnɪr/"]],
+                      quiz: [
+                        { q: "What does IPA stand for?", o: ["International Phonetic Alphabet", "Internal Pronunciation Aid", "Informal Phonics Approach"], a: 0, e: "IPA is the International Phonetic Alphabet." },
+                        { q: "How many sounds are in 'ship' /ʃɪp/?", o: ["4", "3", "2"], a: 1, e: "The sounds are /ʃ/, /ɪ/ and /p/. Sh is one sound." },
+                        { q: "Which statement is true?", o: ["Spelling always matches sound", "The letters 'ough' sound the same in every word", "English spelling often does not match sound"], a: 2, e: "Think of through, though and tough: same letters, different sounds." }] },
+                    { id: 'vowel', icon: '🎵', title: 'Short vs Long Vowels', grad: 'from-orange-500 to-amber-500',
+                      intro: "Many learners hear two English vowels as one. A short vowel is quick and relaxed. A long vowel is held longer. Changing the vowel changes the word.",
+                      points: ["Short /ɪ/ as in ship, bit, live. Keep your lips relaxed.", "Long /iː/ as in sheep, beat, leave. Smile slightly and hold the sound.", "Short /ʊ/ in full and long /uː/ in fool work the same way.", "Words that differ by one sound are called minimal pairs. Practice them in pairs."],
+                      words: [["ship", "/ʃɪp/"], ["sheep", "/ʃiːp/"], ["full", "/fʊl/"], ["fool", "/fuːl/"], ["bit", "/bɪt/"], ["beat", "/biːt/"]],
+                      quiz: [
+                        { q: "Which word has a long vowel /iː/?", o: ["sheep", "ship", "sit"], a: 0, e: "Sheep is /ʃiːp/ with a long vowel." },
+                        { q: "Which pair is a minimal pair?", o: ["full / fool", "cat / dog", "big / large"], a: 0, e: "Only one sound changes: /ʊ/ becomes /uː/." },
+                        { q: "Which word rhymes with 'beat' /biːt/?", o: ["bit", "meet", "bet"], a: 1, e: "Meet /miːt/ shares the long /iː/ and the final /t/." }] },
+                    { id: 'th', icon: '👅', title: 'The TH Sounds', grad: 'from-amber-500 to-lime-500',
+                      intro: "The letters th make two sounds that do not exist in many languages. Both are made with your tongue between your teeth.",
+                      points: ["Voiceless /θ/ as in think, three, thank. Blow air only. Your throat does not vibrate.", "Voiced /ð/ as in this, that, they. Your throat vibrates, so you can feel a buzz.", "Do not replace them with s, z, t, or d. Think and sink are different words.", "Practice: put a finger on your throat. You should feel a buzz for this but not for think."],
+                      words: [["think", "/θɪŋk/"], ["three", "/θriː/"], ["thank you", "/ˈθæŋk juː/"], ["this", "/ðɪs/"], ["that", "/ðæt/"], ["they", "/ðeɪ/"]],
+                      quiz: [
+                        { q: "Which word begins with the voiced /ð/ sound?", o: ["think", "this", "three"], a: 1, e: "This is /ðɪs/ and your throat buzzes." },
+                        { q: "Where is your tongue for /θ/ and /ð/?", o: ["Behind your top teeth, touching the roof", "Between your teeth", "Pulled back, away from your teeth"], a: 1, e: "Place the tip of your tongue lightly between your teeth." },
+                        { q: "Which word has the voiceless /θ/?", o: ["them", "bath", "those"], a: 1, e: "Bath ends with /θ/. Them and those start with /ð/." }] },
+                    { id: 'stress', icon: '📣', title: 'Word Stress', grad: 'from-lime-500 to-emerald-500',
+                      intro: "Every English word with two or more syllables has one strong syllable. The stressed syllable is louder, longer, and clearer. Wrong stress is a common reason people are misunderstood.",
+                      points: ["Mark stress with ˈ before the syllable: information /ˌɪnfərˈmeɪʃn/.", "Words ending in -tion stress the syllable before it: eduCAtion, inforMAtion.", "Some words change meaning with stress: a RECord (noun) but to reCORD (verb).", "Learn the stress together with every new word, not afterwards."],
+                      words: [["record (noun)", "/ˈrekərd/", "The sales record"], ["record (verb)", "/rɪˈkɔːrd/", "Please record the meeting"], ["information", "/ˌɪnfərˈmeɪʃn/"], ["education", "/ˌedʒuˈkeɪʃn/"], ["photograph", "/ˈfoʊtəɡræf/"]],
+                      quiz: [
+                        { q: "Where is the stress in the noun 'record' (a sales record)?", o: ["First syllable: RE-cord", "Second syllable: re-CORD", "No stress"], a: 0, e: "Nouns of this kind are usually stressed on the first syllable." },
+                        { q: "Where is the stress in 'information'?", o: ["IN-for-ma-tion", "in-FOR-ma-tion", "in-for-MA-tion"], a: 2, e: "The syllable before -tion is stressed." },
+                        { q: "A stressed syllable is usually...", o: ["quieter and shorter", "louder, longer and clearer", "silent"], a: 1, e: "Stress makes a syllable stand out." }] },
+                    { id: 'schwa', icon: '😶', title: 'The Schwa /ə/', grad: 'from-emerald-500 to-teal-500',
+                      intro: "The schwa /ə/ is the most common sound in English. It is a weak, lazy 'uh' that appears in syllables that are not stressed. Using it makes you sound natural.",
+                      points: ["Unstressed syllables often become /ə/: about /əˈbaʊt/, teacher /ˈtiːtʃər/.", "The letter does not matter. A, e, o, and u can all become /ə/.", "Small words reduce in fast speech: 'to' becomes /tə/ and 'of' becomes /əv/.", "Do not give every syllable the same strength. English rhythm needs strong and weak beats."],
+                      words: [["about", "/əˈbaʊt/"], ["teacher", "/ˈtiːtʃər/"], ["problem", "/ˈprɑːbləm/"], ["banana", "/bəˈnænə/"], ["support", "/səˈpɔːrt/"]],
+                      quiz: [
+                        { q: "Which sound is the most common in English?", o: ["/æ/", "/ə/", "/iː/"], a: 1, e: "The schwa appears in a huge number of unstressed syllables." },
+                        { q: "Which syllables have the schwa in 'banana' /bəˈnænə/?", o: ["Only the first", "The first and the last", "None"], a: 1, e: "Only the middle syllable is stressed. The first and last are /ə/." },
+                        { q: "In fast speech, 'to' in 'going to work' usually sounds like...", o: ["/tuː/ with a strong vowel", "/tə/ with a schwa", "/toʊ/"], a: 1, e: "Small grammar words are usually weak." }] },
+                    { id: 'ed', icon: '⏪', title: 'Ending -ed', grad: 'from-teal-500 to-cyan-500',
+                      intro: "The ending -ed has three different sounds. Which one you use depends on the sound before it, not the spelling.",
+                      points: ["/t/ after voiceless sounds (p, k, f, s, sh, ch): worked, stopped, washed.", "/d/ after voiced sounds and vowels: played, cleaned, opened.", "/ɪd/ only after /t/ and /d/: wanted, needed, started. This adds a whole syllable.", "Most words do NOT add a syllable. Say 'worked' in one beat, not two."],
+                      words: [["worked", "/wɜːrkt/"], ["stopped", "/stɑːpt/"], ["played", "/pleɪd/"], ["cleaned", "/kliːnd/"], ["wanted", "/ˈwɑːntɪd/"], ["needed", "/ˈniːdɪd/"]],
+                      quiz: [
+                        { q: "How does 'worked' end?", o: ["/t/", "/d/", "/ɪd/"], a: 0, e: "K is voiceless, so -ed is /t/." },
+                        { q: "How does 'played' end?", o: ["/t/", "/d/", "/ɪd/"], a: 1, e: "After a vowel sound, -ed is /d/." },
+                        { q: "How does 'wanted' end?", o: ["/t/", "/d/", "/ɪd/"], a: 2, e: "After /t/, we add a syllable: /ɪd/." }] },
+                    { id: 's', icon: '➕', title: 'Ending -s / -es', grad: 'from-cyan-500 to-sky-500',
+                      intro: "Plural nouns, third-person verbs, and possessives end in -s or -es, which also has three sounds. The rule follows the same idea as -ed.",
+                      points: ["/s/ after voiceless sounds: works, stops, books.", "/z/ after voiced sounds and vowels: plays, runs, bags.", "/ɪz/ after s, z, sh, ch, and j sounds: watches, changes, boxes. This adds a syllable.", "Drop the -s in speech and your grammar sounds wrong, so keep it audible."],
+                      words: [["works", "/wɜːrks/"], ["stops", "/stɑːps/"], ["plays", "/pleɪz/"], ["runs", "/rʌnz/"], ["watches", "/ˈwɑːtʃɪz/"], ["changes", "/ˈtʃeɪndʒɪz/"]],
+                      quiz: [
+                        { q: "How does 'works' end?", o: ["/s/", "/z/", "/ɪz/"], a: 0, e: "K is voiceless, so -s is /s/." },
+                        { q: "How does 'plays' end?", o: ["/s/", "/z/", "/ɪz/"], a: 1, e: "After a vowel sound, -s is /z/." },
+                        { q: "How does 'watches' end?", o: ["/s/", "/z/", "/ɪz/"], a: 2, e: "After /tʃ/, we add a syllable: /ɪz/." }] },
+                    { id: 'silent', icon: '🤫', title: 'Silent Letters', grad: 'from-sky-500 to-indigo-500',
+                      intro: "Many English words contain letters you do not pronounce. They are leftovers from older spellings, so you have to learn them word by word.",
+                      points: ["Silent k before n: knife, know, knee. Silent w before r: write, wrong.", "Silent b after m: comb, climb, thumb.", "Silent h in a few words: hour, honest, heir.", "Some words lose a syllable or a letter in speech: Wednesday /ˈwenzdeɪ/, island /ˈaɪlənd/."],
+                      words: [["write", "/raɪt/"], ["knife", "/naɪf/"], ["comb", "/koʊm/"], ["hour", "/ˈaʊər/"], ["Wednesday", "/ˈwenzdeɪ/"], ["island", "/ˈaɪlənd/"]],
+                      quiz: [
+                        { q: "Which letter is silent at the start of 'write'?", o: ["w", "r", "t"], a: 0, e: "Write is pronounced /raɪt/." },
+                        { q: "Which word has a silent 'b'?", o: ["comb", "table", "bring"], a: 0, e: "Comb is /koʊm/. The b is silent after m." },
+                        { q: "How is 'hour' pronounced?", o: ["/ˈaʊər/ (silent h)", "/ˈhaʊər/ (sounded h)", "/ˈhɔːr/"], a: 0, e: "The h is silent, so hour sounds like our." }] },
+                    { id: 'into', icon: '🎶', title: 'Intonation', grad: 'from-indigo-500 to-purple-500',
+                      intro: "Intonation is the music of a sentence: how your voice rises and falls. It tells the listener whether you are asking, telling, or still talking.",
+                      points: ["Statements and wh-questions usually end with a falling tone ↘: The server is down. Where is the report?", "Yes/no questions usually end with a rising tone ↗: Are you ready?", "In a list, the voice rises on each item and falls on the last: code ↗ tests ↗ and docs ↘.", "Flat intonation can sound bored or rude, so let your voice move."],
+                      words: [["Are you ready? ↗", "", "Are you ready?"], ["The server is down. ↘", "", "The server is down."], ["Where is the report? ↘", "", "Where is the report?"], ["Code ↗ tests ↗ and docs ↘", "", "We need code, tests, and docs."]],
+                      quiz: [
+                        { q: "Which tone usually ends a yes/no question like 'Are you ready?'", o: ["Falling", "Rising", "Flat"], a: 1, e: "Yes/no questions usually rise at the end." },
+                        { q: "A statement such as 'The server is down.' usually ends with...", o: ["a rising tone", "a falling tone", "a flat tone"], a: 1, e: "Statements finish with a falling tone." },
+                        { q: "In a list ('code, tests, and docs'), your voice should...", o: ["rise on each item and fall on the last", "fall on every item", "rise only on the last item"], a: 0, e: "Rising shows the list continues. Falling shows it is finished." }] }
+                ],
+
+                phases: [
+                    { id: 1, name: 'Phase 1: Core Architecture & Action Tenses', days: [1, 2, 3, 4, 5, 6, 7] },
+                    { id: 2, name: 'Phase 2: Time Anchors & Conditionals', days: [8, 9, 10, 11, 12, 13, 14] },
+                    { id: 3, name: 'Phase 3: Control, Obligation, and Voice', days: [15, 16, 17, 18, 19, 20, 21] },
+                    { id: 4, name: 'Phase 4: Advanced Flow & Real-World Fluency', days: [22, 23, 24, 25, 26, 27, 28, 29, 30] }
+                ],
+
+                lessons: {
+                    1: { phase: 1, title: "Present Simple vs. Present Continuous", objective: "Distinguish between permanent habits and temporary ongoing actions.", comprehensive_discussion: "The Present Simple tense is used for routines, general truths, and habits (e.g., 'I work every day'). Present Continuous is used for temporary actions occurring at the exact moment of speech (e.g., 'I am working right now').", structural_rules: "• Present Simple: [Subject + Base Verb (+ s/es)] | Time signals: usually, every day, always.\n• Present Continuous: [Subject + am/is/are + Verb-ing] | Time signals: right now, at the moment, Look!", examples: ["Habit: She manages the project every day.", "Ongoing Action: She is updating the software right now."] },
+                    2: { phase: 1, title: "Past Simple Mastery", objective: "Form and apply completed past actions and irregular verbs.", comprehensive_discussion: "Past Simple expresses actions completed at a definite past time. Regular verbs add -ed, while irregular verbs change forms completely.", structural_rules: "• Regular: [Subject + Verb-ed]\n• Irregular: [Subject + Irregular Past Form]\n• Negative: [Subject + did not + Base Verb]", examples: ["Completed Action: We submitted the lesson plans yesterday.", "Irregular Form: He went to the conference last year."] },
+                    3: { phase: 1, title: "Past Continuous in Action", objective: "Set background scenes and describe interrupted past actions.", comprehensive_discussion: "Past Continuous describes continuous background actions interrupted by another event in the past.", structural_rules: "• Structure: [Subject + was/were + Verb-ing]\n• Connectors: 'while' + continuous clause, 'when' + simple past clause.", examples: ["Interrupted: I was writing code when the power went out."] },
+                    4: { phase: 1, title: "Future Schedules & Timetables", objective: "Express fixed future events using present tenses.", comprehensive_discussion: "Official timetables, transport schedules, and fixed institutional events use the Present Simple tense for future time.", structural_rules: "• Timetables: [Subject + Present Simple Verb]\n• Personal Arrangements: [Subject + am/is/are + Verb-ing]", examples: ["Official Schedule: The train departs at 08:00 AM tomorrow."] },
+                    5: { phase: 1, title: "Intentions & Spontaneous Decisions", objective: "Choose between 'going to' and 'will' accurately.", comprehensive_discussion: "Use 'will' for instant spontaneous decisions or offers. Use 'be going to' for pre-planned intentions or clear physical evidence.", structural_rules: "• Instant Decision: [will + Base Verb]\n• Pre-planned Intention: [am/is/are going to + Base Verb]", examples: ["Spontaneous: I will answer the phone.", "Planned: I am going to launch the app next month."] },
+                    6: { phase: 1, title: "Future Continuous & Future Perfect", objective: "Project actions in progress and completed deadlines in the future.", comprehensive_discussion: "Future Continuous projects an ongoing action at a specific future moment. Future Perfect emphasizes an action completed before a future deadline.", structural_rules: "• Future Continuous: [will be + Verb-ing]\n• Future Perfect: [will have + Past Participle]", examples: ["Continuous: This time tomorrow, I will be presenting.", "Perfect: By August, I will have finished the manuscript."] },
+                    7: { phase: 1, title: "Phase 1 Capstone Challenge", objective: "Integrate core tenses and execute accurate time conversion.", comprehensive_discussion: "Unifies past, present, and future action tenses into fluid communication.", structural_rules: "• Master time signals to select appropriate tenses.", examples: ["Integrated: Although I usually teach math, today I am hosting a software workshop."] },
+                    8: { phase: 2, title: "Present Perfect (Experience & News)", objective: "Connect past actions to present relevance without specific times.", comprehensive_discussion: "Bridges past and present time for life experiences or completed actions with current results without specifying exact dates.", structural_rules: "• Form: [have/has + Past Participle]\n• Do not use specific past time markers like 'yesterday'.", examples: ["Experience: I have published a research paper.", "Result: He has lost his key."] },
+                    9: { phase: 2, title: "Present Perfect Modifiers", objective: "Utilize just, already, yet, and ever/never effectively.", comprehensive_discussion: "Modifiers provide precise timing context: 'just' (shortly ago), 'already' (sooner than expected), 'yet' (expected in negatives/questions).", structural_rules: "• Position: 'just'/'already' between have & verb; 'yet' at the end.", examples: ["Already: We have already completed Phase 1.", "Yet: Have you sent the report yet?"] },
+                    10: { phase: 2, title: "Present Perfect Continuous", objective: "Highlight the duration of ongoing activities started in the past.", comprehensive_discussion: "Emphasizes the continuous duration of an action that started in the past and is still ongoing.", structural_rules: "• Form: [have/has + been + Verb-ing]", examples: ["Duration: He has been teaching for five years."] },
+                    11: { phase: 2, title: "Duration Trackers (`For` vs. `Since`)", objective: "Master exact time points versus time spans.", comprehensive_discussion: "Use 'for' to state a duration span of time. Use 'since' to mark an exact starting point in time.", structural_rules: "• For + Duration (e.g., for 3 hours)\n• Since + Point in Time (e.g., since 2018)", examples: ["Span: I have worked here for three years.", "Point: I have lived here since 2018."] },
+                    12: { phase: 2, title: "Past Simple vs. Present Perfect Contrast", objective: "Differentiate definite past time markers from open time frames.", comprehensive_discussion: "Finished time frames mandate Past Simple. Unfinished or open time frames mandate Present Perfect.", structural_rules: "• Finished Time -> Past Simple\n• Unfinished Time -> Present Perfect", examples: ["Finished: I sent the email yesterday.", "Unfinished: I have sent three emails today."] },
+                    13: { phase: 2, title: "Past Perfect & Past Perfect Continuous", objective: "Sequence multiple events in the past accurately.", comprehensive_discussion: "Establishes which of two past actions occurred first using 'had + past participle'.", structural_rules: "• First Past Event: [had + Past Participle]\n• Second Past Event: Past Simple", examples: ["Sequence: The train had left before we arrived."] },
+                    14: { phase: 2, title: "Phase 2 Capstone Challenge", objective: "Execute time-anchor and timeline reconstruction assessments.", comprehensive_discussion: "Consolidates past, present perfect, and past perfect timeline relationships.", structural_rules: "• Accurate chronological time anchoring.", examples: ["Synthesis: She had worked in IT before she became a teacher."] },
+                    15: { phase: 3, title: "Ability & Possibility", objective: "Express capability and potential with can, could, and be able to.", comprehensive_discussion: "Modals expressing capability across present (can), past (could), and flexible tenses (be able to).", structural_rules: "• Present: can | Past: could | Future: will be able to", examples: ["Present: She can program in Python.", "Future: You will be able to speak fluently."] },
+                    16: { phase: 3, title: "Logical Deduction", objective: "Express degrees of certainty using must, can't, might, and may.", comprehensive_discussion: "Drawing logical conclusions based on evidence: 'must' (high positive certainty), 'can't' (high negative certainty).", structural_rules: "• High Certainty: must / can't\n• Uncertainty: might / may / could", examples: ["Certainty: His car is outside; he must be home."] },
+                    17: { phase: 3, title: "Obligation & Necessity", objective: "Navigate rules and obligations using have to, must, and should.", comprehensive_discussion: "Distinguishes external rules ('have to'), personal mandates ('must'), and recommendations ('should').", structural_rules: "• Law/Rule: have to / must\n• Recommendation: should", examples: ["Rule: Drivers have to wear seatbelts."] },
+                    18: { phase: 3, title: "Prohibition & Absence of Obligation", objective: "Distinguish strictly between mustn't and don't have to.", comprehensive_discussion: "'Mustn't' indicates forbidden or illegal actions. 'Don't have to' indicates optional or unnecessary actions.", structural_rules: "• Prohibition: mustn't\n• Optional: don't have to / doesn't have to", examples: ["Forbidden: You mustn't enter without a pass.", "Optional: You don't have to wear a suit."] },
+                    19: { phase: 3, title: "Passive Voice (Present & Past)", objective: "Shift sentence focus from the action performative to the receiver.", comprehensive_discussion: "Focuses on the receiver of the action rather than the doer, standard in technical and academic writing.", structural_rules: "• Present Passive: [am/is/are + Past Participle]\n• Past Passive: [was/were + Past Participle]", examples: ["Passive: The website was developed by the team."] },
+                    20: { phase: 3, title: "Reported Speech Essentials", objective: "Convert direct quotes into indirect summaries with backshifting.", comprehensive_discussion: "Relays spoken words indirectly by shifting tenses one step back into the past.", structural_rules: "• Present Simple -> Past Simple\n• Present Continuous -> Past Continuous", examples: ["Direct: 'I am coding,' he said.\nReported: He said he was coding."] },
+                    21: { phase: 3, title: "Phase 3 Capstone Challenge", objective: "Apply polite modal transformations, obligation rules, and passive tone.", comprehensive_discussion: "Integrates modal nuance, reported speech, and passive voice into professional discourse.", structural_rules: "• Professional formal register and polite requests.", examples: ["Polite Request: Could you please submit the documentation?"] },
+                    22: { phase: 4, title: "First & Second Conditionals", objective: "Master real future possibilities versus unreal present hypotheses.", comprehensive_discussion: "First Conditional evaluates real future possibilities. Second Conditional explores unreal hypothetical scenarios.", structural_rules: "• 1st Conditional: [If + Present Simple, ... WILL + Base Verb]\n• 2nd Conditional: [If + Past Simple, ... WOULD + Base Verb]", examples: ["1st: If it rains, we will stay inside.", "2nd: If I won the lottery, I would buy a building."] },
+                    23: { phase: 4, title: "Third & Mixed Conditionals", objective: "Alter past outcomes and connect past causes to present results.", comprehensive_discussion: "Third Conditional reflects on past unreal situations. Mixed Conditionals connect an unreal past cause to a present result.", structural_rules: "• 3rd Conditional: [If + Past Perfect, ... WOULD HAVE + Past Participle]", examples: ["3rd: If I had studied, I would have passed."] },
+                    24: { phase: 4, title: "Relative Clauses (Who, Which, That, Whose)", objective: "Connect ideas smoothly using relative pronouns.", comprehensive_discussion: "Joins ideas using relative pronouns: who (people), which/that (things), whose (possession).", structural_rules: "• Defining Clause: Essential information without commas.", examples: ["Relative: The educator who created the tool won an award."] },
+                    25: { phase: 4, title: "Article Mastery (A, An, The, Zero Article)", objective: "Navigate definite, indefinite, and generalized noun modifiers.", comprehensive_discussion: "Articles define whether a noun is generic (a/an/zero article) or specific (the).", structural_rules: "• A + Consonant sound | An + Vowel sound | The + Specific item", examples: ["Indefinite: She bought a computer.", "Definite: The computer is fast."] },
+                    26: { phase: 4, title: "Comparatives, Superlatives & Intensifiers", objective: "Scale descriptions with advanced comparative modifiers.", comprehensive_discussion: "Quantifies degrees of difference using comparatives modified by intensifiers like 'much' or 'significantly'.", structural_rules: "• Intensifiers: [much / far / significantly + Comparative]", examples: ["Intensified: The new build is significantly faster."] },
+                    27: { phase: 4, title: "High-Frequency Phrasal Verbs", objective: "Integrate context-driven multi-word verbs into professional speech.", comprehensive_discussion: "Mastering multi-word verbs consisting of a verb and particle (e.g., look into, carry out).", structural_rules: "• Inseparable vs Separable Phrasal Verbs.", examples: ["Investigate: We will look into the matter."] },
+                    28: { phase: 4, title: "Precision Prepositions (At, On, In, By, Until)", objective: "Apply spatial and temporal prepositions with zero error.", comprehensive_discussion: "Precision prepositions for time and space: 'at' (precise time/location), 'on' (days/dates), 'by' (deadline).", structural_rules: "• Time: AT 9 AM | ON Monday | IN July | BY Friday", examples: ["Deadline: Submit the project by Friday."] },
+                    29: { phase: 4, title: "Advanced Connectors & Contrast", objective: "Manage complex arguments using formal linking transitions.", comprehensive_discussion: "Connecting complex contrast clauses using 'although' (followed by a clause) and 'despite' (followed by a noun phrase).", structural_rules: "• Although + Subject + Verb\n• Despite / In spite of + Noun Phrase", examples: ["Contrast: Although it was raining, they completed the audit."] },
+                    30: { phase: 4, title: "Capstone Simulation & Final Fluency Assessment", objective: "Execute comprehensive mastery across all structural and contextual units.", comprehensive_discussion: "Full synthesis of advanced English grammar, syntax, and natural professional expression.", structural_rules: "• Advanced syntactic inversion and conditional accuracy.", examples: ["Mastery: Had I known earlier, I would have assisted you."] }
+                },
+
+                get lessonExamples() {
+                    const own = (this.currentLesson.examples || []).map(e => QENGINE.esc(e));
+                    return own.concat(QENGINE.examples(this.currentDay, Math.max(0, 10 - own.length))).slice(0, 10);
+                },
+
+                init() {
+                    if (new URLSearchParams(window.location.search).get('subscribed') === '1') {
+                        this.subscribed = true;
+                        localStorage.setItem('english_sub_v1', '1');
+                        window.history.replaceState(null, '', window.location.pathname);
+                    }
+                },
+
+                isLocked(day) {
+                    return !this.subscribed && day > this.billing.freeDays;
+                },
+
+                get plan() {
+                    return this.billing.plans.find(x => x.id === this.selectedPlan) || this.billing.plans[0];
+                },
+
+                subscribe() {
+                    const p = this.plan;
+                    if (p.link) { window.location.href = p.link; return; }
+                    if (this.billing.demoUnlock && window.confirm('Stripe is not connected yet. Unlock Premium in demo mode?')) {
+                        this.subscribed = true;
+                        localStorage.setItem('english_sub_v1', '1');
+                    }
+                },
+
+                get bt() { return this.basics[this.basicTopic]; },
+
+                get basicsMastered() {
+                    return this.basics.filter(t => this.bBest[t.id] === 3).length;
+                },
+
+                fmt(t) {
+                    return t.replace(/\[\[(.+?)\]\]/g, '<span class="px-1.5 py-0.5 rounded bg-sky-100 text-sky-800 font-semibold">$1</span>')
+                        .replace(/\{\{(.+?)\}\}/g, '<span class="px-1.5 py-0.5 rounded bg-pink-100 text-pink-800 font-semibold">$1</span>')
+                        .replace(/\*\*(.+?)\*\*/g, '<strong class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-900">$1</strong>');
+                },
+
+                bKey(qi) { return this.basicTopic + '-' + qi; },
+
+                topicScore(ti) {
+                    return this.basics[ti].quiz.filter((q, qi) => this.bAns[ti + '-' + qi] === q.a).length;
+                },
+
+                topicDone(ti) {
+                    return this.basics[ti].quiz.every((q, qi) => this.bAns[ti + '-' + qi] !== undefined);
+                },
+
+                pickB(qi, oi) {
+                    if (this.bAns[this.bKey(qi)] !== undefined) return;
+                    this.bAns[this.bKey(qi)] = oi;
+                    if (this.topicDone(this.basicTopic)) {
+                        const id = this.bt.id, sc = this.topicScore(this.basicTopic);
+                        if (sc > (this.bBest[id] === undefined ? -1 : this.bBest[id])) {
+                            this.bBest[id] = sc;
+                            localStorage.setItem('english_basics_v1', JSON.stringify(this.bBest));
+                        }
+                    }
+                },
+
+                optClass(qi, oi) {
+                    const ch = this.bAns[this.bKey(qi)], ans = this.bt.quiz[qi].a;
+                    if (ch === undefined) return 'bg-white border-slate-200 hover:bg-indigo-50 hover:border-indigo-300';
+                    if (oi === ans) return 'bg-emerald-100 border-emerald-400 text-emerald-900';
+                    if (oi === ch) return 'bg-rose-100 border-rose-400 text-rose-900';
+                    return 'bg-slate-50 border-slate-200 text-slate-400';
+                },
+
+                retryTopic() {
+                    this.bt.quiz.forEach((q, qi) => delete this.bAns[this.bKey(qi)]);
+                },
+
+                get canSpeak() { return typeof window !== 'undefined' && 'speechSynthesis' in window; },
+
+                speak(text, slow) {
+                    if (!this.canSpeak) return;
+                    const u = new SpeechSynthesisUtterance(text);
+                    u.lang = 'en-US';
+                    u.rate = slow ? 0.55 : 0.9;
+                    window.speechSynthesis.cancel();
+                    window.speechSynthesis.speak(u);
+                },
+
+                get pt() { return this.phon[this.pTopic]; },
+
+                get phonMastered() { return this.phon.filter(t => this.pBest[t.id] === 3).length; },
+
+                pKey(qi) { return this.pTopic + '-' + qi; },
+
+                pScore(ti) { return this.phon[ti].quiz.filter((q, qi) => this.pAns[ti + '-' + qi] === q.a).length; },
+
+                pDone(ti) { return this.phon[ti].quiz.every((q, qi) => this.pAns[ti + '-' + qi] !== undefined); },
+
+                pickP(qi, oi) {
+                    if (this.pAns[this.pKey(qi)] !== undefined) return;
+                    this.pAns[this.pKey(qi)] = oi;
+                    if (this.pDone(this.pTopic)) {
+                        const id = this.pt.id, sc = this.pScore(this.pTopic);
+                        if (sc > (this.pBest[id] === undefined ? -1 : this.pBest[id])) {
+                            this.pBest[id] = sc;
+                            localStorage.setItem('english_phon_v1', JSON.stringify(this.pBest));
+                        }
+                    }
+                },
+
+                pOptClass(qi, oi) {
+                    const ch = this.pAns[this.pKey(qi)], ans = this.pt.quiz[qi].a;
+                    if (ch === undefined) return 'bg-white border-slate-200 hover:bg-rose-50 hover:border-rose-300';
+                    if (oi === ans) return 'bg-emerald-100 border-emerald-400 text-emerald-900';
+                    if (oi === ch) return 'bg-rose-100 border-rose-400 text-rose-900';
+                    return 'bg-slate-50 border-slate-200 text-slate-400';
+                },
+
+                retryPhon() { this.pt.quiz.forEach((q, qi) => delete this.pAns[this.pKey(qi)]); },
+
+                get liveStreak() {
+                    const t = new Date().toLocaleDateString('en-CA'), y = new Date(Date.now() - 864e5).toLocaleDateString('en-CA');
+                    return (this.streak.last === t || this.streak.last === y) ? this.streak.count : 0;
+                },
+
+                get heatmap() {
+                    const out = [];
+                    for (let i = 27; i >= 0; i--) {
+                        const k = new Date(Date.now() - i * 864e5).toLocaleDateString('en-CA');
+                        out.push({ k: k, on: this.streak.dates.includes(k) });
+                    }
+                    return out;
+                },
+
+                get badges() {
+                    const b = [], best = this.streak.best || 0, done = this.completedCount;
+                    if (best >= 3) b.push('3-Day Streak');
+                    if (best >= 7) b.push('7-Day Streak');
+                    if (best >= 14) b.push('14-Day Streak');
+                    if (done >= 1) b.push('First Day Done');
+                    if (done >= 10) b.push('10 Days Done');
+                    if (done >= 30) b.push('Mastery Graduate');
+                    if (Object.values(this.skillStats).some(x => x.r >= 45)) b.push('Sharp Shooter (45+)');
+                    return b;
+                },
+
+                get weakSpots() {
+                    return Object.entries(this.skillStats)
+                        .map(([d, x]) => ({ day: +d, title: this.getLesson(+d).title, r: x.r, t: x.t, pct: Math.round(x.r / x.t * 100) }))
+                        .filter(x => x.pct < 85).sort((a, b) => a.pct - b.pct).slice(0, 3);
+                },
+
+                recordActivity() {
+                    const t = new Date().toLocaleDateString('en-CA'), y = new Date(Date.now() - 864e5).toLocaleDateString('en-CA'), st = this.streak;
+                    if (st.last !== t) {
+                        st.count = st.last === y ? st.count + 1 : 1;
+                        st.last = t;
+                        st.best = Math.max(st.best || 0, st.count);
+                        st.dates = st.dates.concat(t).slice(-60);
+                    }
+                    localStorage.setItem('english_streak_v1', JSON.stringify(st));
+                },
+
+                startDrill() {
+                    if (!this.subscribed) return;
+                    const days = this.weakSpots.length ? this.weakSpots.map(w => w.day) : [this.currentDay];
+                    const per = Math.ceil(8 / days.length);
+                    const sets = days.map(d => QENGINE.drill(d, per).map(q => Object.assign({ day: d }, q)));
+                    const qs = [];
+                    for (let i = 0; i < per; i++) sets.forEach(x => { if (x[i]) qs.push(x[i]); });
+                    this.drillQs = qs.slice(0, 8);
+                    this.drillIdx = 0; this.drillPick = null; this.drillScore = 0; this.drillDone = false; this.drillActive = true;
+                },
+
+                answerDrill(opt) {
+                    if (this.drillPick !== null) return;
+                    this.drillPick = opt;
+                    if (opt === this.drillQs[this.drillIdx].c) this.drillScore++;
+                },
+
+                nextDrill() {
+                    if (this.drillIdx < this.drillQs.length - 1) { this.drillIdx++; this.drillPick = null; }
+                    else this.drillDone = true;
+                },
+
+                get currentLesson() {
+                    return this.lessons[this.currentDay] || this.lessons[1];
+                },
+
+                getLesson(day) {
+                    return this.lessons[day] || this.lessons[1];
+                },
+
+                isCompleted(day) {
+                    return this.completedDays.includes(day);
+                },
+
+                toggleComplete(day) {
+                    if (this.isCompleted(day)) {
+                        this.completedDays = this.completedDays.filter(d => d !== day);
+                    } else {
+                        this.completedDays.push(day);
+                    }
+                    localStorage.setItem('english_completed_days_absolute_v14', JSON.stringify(this.completedDays));
+                },
+
+                startTest() {
+                    if (this.isLocked(this.currentDay)) return;
+                    this.testActive = true;
+                    this.testSubmitted = false;
+                    this.currentBlock = 1;
+                    this.userAnswers = {};
+                },
+
+                resetAll() {
+                    this.drillActive = false;
+                    this.missed = [];
+                    this.testActive = false;
+                    this.testSubmitted = false;
+                    this.userAnswers = {};
+                    this.currentBlock = 1;
+                },
+
+                getGlobalIndex(block, qIndex) {
+                    return (block - 1) * 10 + qIndex;
+                },
+
+                getQuestionData(globalIdx) {
+                    const categories = ["Core Rules", "Error Identification", "Syntax Transformation", "Contextual Application", "Advanced Fluency"];
+                    const q = QENGINE.get(this.currentDay)[globalIdx - 1];
+                    return {
+                        category: categories[Math.floor((globalIdx - 1) / 10)],
+                        prompt: q.p,
+                        options: q.o,
+                        correct: q.c
+                    };
+                },
+
+                submitTest() {
+                    let score = 0;
+                    const missed = [];
+                    for (let i = 1; i <= 50; i++) {
+                        const qData = this.getQuestionData(i);
+                        if (this.userAnswers[i] === qData.correct) {
+                            score++;
+                        } else {
+                            missed.push({ n: i, p: qData.prompt, c: qData.correct, y: this.userAnswers[i] || '(no answer)' });
+                        }
+                    }
+                    this.missed = missed;
+                    this.skillStats[this.currentDay] = { r: score, t: 50 };
+                    localStorage.setItem('english_skill_stats_v1', JSON.stringify(this.skillStats));
+                    this.recordActivity();
+                    this.finalScore = score;
+                    this.testActive = false;
+                    this.testSubmitted = true;
+                    if (score >= 38 && !this.isCompleted(this.currentDay)) {
+                        this.toggleComplete(this.currentDay);
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>
