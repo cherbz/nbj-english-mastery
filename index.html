@@ -53,18 +53,20 @@
     <!-- Header -->
     <header class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 sticky top-0 z-30 shadow-lg">
         <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <div class="flex items-center space-x-3">
+            <div class="flex flex-col sm:flex-row items-center text-center sm:text-left gap-3">
                 <div class="glass-logo px-3.5 py-2 rounded-2xl font-extrabold text-lg select-none" aria-label="NBJ logo">NBJ</div>
                 <div>
                     <h1 class="text-xl font-bold text-white">30-Day English Mastery</h1>
                     <p class="text-xs text-indigo-100">Comprehensive Curriculum & 50-Item Unique Proficiency Suite</p>
                 </div>
             </div>
+            <div class="flex items-center justify-center gap-2 flex-wrap">
             <button x-show="!subscribed" @click="currentDay = billing.freeDays + 1; resetAll(); window.scrollTo({ top: 0, behavior: 'smooth' })"
                 class="bg-amber-400 text-slate-900 text-xs font-bold px-4 py-2 rounded-xl shadow-md hover:bg-amber-300">Go Premium</button>
             <span x-show="subscribed" class="bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold px-3 py-2 rounded-xl" x-text="'Premium \u2713 \u2022 ' + daysLeft + ' days left'"></span>
             <div class="flex items-center gap-2 bg-orange-50 border border-orange-200 text-orange-700 rounded-xl px-3 py-2 text-xs font-bold">
                 <span>&#128293;</span><span x-text="liveStreak + '-day streak'"></span>
+            </div>
             </div>
             <!-- Progress Bar -->
             <div class="w-full sm:w-72 bg-white/15 rounded-full p-1 border border-white/25">
@@ -159,7 +161,7 @@
                 </div>
                 <div class="max-w-md mx-auto bg-slate-900 text-white rounded-2xl p-6 shadow-lg">
                     <div class="text-xs font-bold uppercase tracking-widest text-indigo-300 mb-3">Premium Access</div>
-                    <div class="grid grid-cols-2 gap-2 mb-5">
+                    <div class="grid gap-2 mb-5" :class="billing.plans.length > 1 ? 'grid-cols-2' : 'grid-cols-1'">
                         <template x-for="pl in billing.plans" :key="pl.id">
                             <button @click="selectedPlan = pl.id" class="rounded-xl border p-3 text-left transition-all"
                                 :class="selectedPlan === pl.id ? 'border-brand-500 bg-brand-600/20' : 'border-slate-700 bg-slate-800 hover:bg-slate-700'">
@@ -175,10 +177,10 @@
                         <li class="flex gap-2"><span class="text-emerald-400">&#10003;</span><span>Unlimited 5-minute Fix-It drills with fresh sentences</span></li>
                     </ul>
                     <div class="space-y-3">
-                        <button @click="requestPayment()" class="w-full bg-gradient-to-r from-brand-600 to-pink-500 hover:opacity-90 text-white font-bold py-3 rounded-xl shadow-md transition-all" x-text="'1. Email us to get the ' + plan.name + ' (' + plan.price + ')'"></button>
-                        <button @click="openGmail()" class="w-full text-xs text-slate-300 hover:text-white underline">No mail app? Open a Gmail draft in your browser</button>
+                        <button @click="openGmail()" class="w-full bg-gradient-to-r from-brand-600 to-pink-500 hover:opacity-90 text-white font-bold py-3 rounded-xl shadow-md transition-all" x-text="'1. Email us to get the ' + plan.name + ' (' + plan.price + ')'"></button>
+                        <button @click="requestPayment()" class="w-full text-xs text-slate-300 hover:text-white underline">Not using Gmail? Open your mail app instead</button>
                         <p class="text-xs text-slate-300 flex flex-wrap items-center gap-2">
-                            <span>No email app? Write to</span>
+                            <span>Or write to</span>
                             <span class="font-semibold text-white break-all" x-text="billing.contact"></span>
                             <button @click="copyContact()" class="text-[11px] bg-slate-700 hover:bg-slate-600 rounded px-2 py-0.5" x-text="copied ? 'Copied!' : 'Copy'"></button>
                         </p>
@@ -923,28 +925,34 @@
            2. Customers email you, you reply with your GCash details, they pay and send the receipt.
            3. After checking the payment, email them an access code. Generate codes with make-codes.py
               and paste the printed hash lines into `codeHashes` (plain codes never appear in this file).
-           4. Prices below are placeholders: change them to your own. */
+           4. Change the price in `plans` any time. Codes below are all 1-year (365 days) codes. */
         const BILLING = {
             freeDays: 7,
             contact: 'cherbbinondzo@gmail.com',
             plans: [
-                { id: 'pass30', name: '30-Day Pass', price: '\u20B1299', per: ' / 30 days', note: '' },
-                { id: 'pass365', name: '1-Year Pass', price: '\u20B11,999', per: ' / year', note: 'Best value' }
+                { id: 'pass365', name: '1-Year Pass', price: '\u20B1300', per: ' / year', note: 'One payment. No monthly fees.' }
             ],
             codeHashes: {
-                '0502874b0eef37248e720987e2340c000f45bd9d6b6f613a0cdab79db20edd39': 30,
-                'd4a787b9c6be49e9d4086ba7522ff504e32fea51353c44bb0a34d5f82c604e25': 30,
-                '9c6d043f28d2b82072f814fd92f934906be63661d29623ff1770889bcc071d3e': 30,
-                '5a2b5f0a0b02e279d62a8d826ad7b236ff8aacd462d8c2b9938d04124d5ea3b9': 30,
-                '00cff27c257bcbbbf32738ad46ecdd90c4d1f64de578f9e282c53b459885eecb': 30,
-                'fdb7b8941bef371ecf253b3dcb69694b5215725791beda26a079a98b8e1c0dfe': 30,
-                '13760f6a1e4a5465aebc880e7a3edd1f43b1cbe30f9cc7a50b6ff602d217c72f': 30,
-                'ca00839aeb67af0577bc18e16f55d46e56b7989accf3ea00e3f0fa89e621dbc0': 30,
-                '1944768a4c2b095190e2c26878453e6a79c9e1ea8847bd4e9663f5838c518b9d': 30,
-                '2b1b101170b19a2ca316b3486f4a483b56641b8f772213d3b64ece4c20340740': 30,
                 '515cd35ffae7be877d652ee10eb0009d488948e2868a488d93aae484a07b678a': 365,
                 '611641b151d1906b8f7300f019e510826379a35219e5bb1e8c89d0c004aeda02': 365,
                 '8374e5a79e4b2df86be593ba60b5a107834919cbb9f542a900b75a5083ae10fd': 365,
+                'd0b72b159949b97398fc8d8eaf8fdabba7560f05d5b94c8461b72ee76363c7d5': 365,
+                '4afaac19f3d545522ea2e4a4f2fe29264dc57ea46a458901db0a89d578344c2f': 365,
+                'f5a8d62569963a196d62afe69180436206109563b0c0d72e25c008674e356ea4': 365,
+                '298b3973e55466b6dd4baef9bf1b8ede391c33649101d92c5e221ecc7894411e': 365,
+                'a848c8e8b01aa5c39fef78157bca114d031682502e7ccd4e3f3a4819692c15ef': 365,
+                'ba020bd5ae4f0c81b047ecdf1bf7cfc2fc8ab7c175866f406087365d7513262a': 365,
+                '814561d139e52ea74e010ac37157a2393e911ecb325fe97a92416131a7e33060': 365,
+                '756e9f2257bc2a6f6946c5caad8e4a6e952f9304eb8ae21f97d812ddbe758629': 365,
+                '51cb85c4fbe0619fb669fb34e7d28ecac5fea4a07af4ddfe19db2886569496a6': 365,
+                '779142c4642af16f4d29a3fa5c5d82dac40018d23724f84cbe211b72530a5b0d': 365,
+                '67e1a834bec19c793ec3fc0eb45b8fe209300268405890bd64b535f24c3d8a18': 365,
+                '3985079913e0c76966cf0ea59a79f0f4611e0e0bb6578a0335be80994d6d1293': 365,
+                '22963f706c32c241a480c1b8eb0bea60d5788154cfe2dc00a157daa1adad76be': 365,
+                '92a63dd11cd3c7b0127b97be0a506c95a8448fb6f8c027d2f6e90cf1f427730e': 365,
+                'd23c9f91057a94e450111f339822eaac768df73da4a0a1be126ffbae962f93da': 365,
+                'bf22911c0ef200473f66fc11e72e97a6381aeb385406f69785d9d00788e2a6c0': 365,
+                '10dff48f6679c6dd1168aa73f35e4825dfad54a329724b4e4b98cc01e882b4ea': 365,
             }
         };
 
